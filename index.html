@@ -439,7 +439,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
       <h2>1 · Questions <span class="zh">題目（所有房間共用）</span></h2>
       <ol class="qprev" id="qPrev"></ol>
       <button class="btn ghost sm" id="tEditQ">Edit questions 編輯題目</button>
-      <div class="hint">已經開始玩的房間不會被改到，只會套用到還沒翻任何一格的房間。</div>
+      <div class="hint">新題目會套用到各房間尚未翻開的格子；已翻開的題目、照片、房間代碼與進度都會保留。</div>
     </div>
     <div class="panel" id="pRooms">
       <h2>2 · Rooms <span class="zh">房間</span></h2>
@@ -500,22 +500,70 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 
 /* ======================= DATA ======================= */
 const DEFAULT_Q = [
-  ["What is your phone's lock screen?","你的手機桌布 / 鎖定畫面是什麼？"],
-  ["Write your partner's name by hand.","用手寫出對方的名字"],
-  ["Show your favorite snack.","你最喜歡的零食"],
-  ["What's in your pencil case?","你的鉛筆盒裡有什麼？"],
-  ["Show the view from your classroom window.","教室窗外的風景"],
-  ["Draw your favorite animal.","畫出你最喜歡的動物"],
-  ["Find something blue near you.","找一個你身邊藍色的東西"],
-  ["Make your funniest face!","做出你最好笑的鬼臉！"],
-  ["Write \"Hello\" in your language.","用你的語言寫「你好」"],
-  ["Show your favorite book or comic.","你最喜歡的書或漫畫"],
-  ["Show something about your hobby.","跟你的興趣有關的東西"],
-  ["Draw a place you want to travel to.","畫出你想去旅行的地方"],
-  ["Show something that makes you happy.","讓你開心的東西"],
-  ["What does your desk look like right now?","你現在的桌面長怎樣？"],
-  ["Show your school shoes or uniform.","你的學校制服或鞋子"],
-  ["Make a heart with your hands!","用手比一個愛心！"]
+  [
+    "Show your phone case or wallpaper. Choose one you feel comfortable sharing and tell your partner why you like it.",
+    "介紹你的手機殼或桌布：選一個你願意分享的，說說為什麼喜歡。"
+  ],
+  [
+    "Write your partner’s name on a piece of paper. First, ask them how to pronounce it. Then write it down and show them.",
+    "手寫對方的名字：先請對方教你怎麼念，再把他的名字寫在紙上展示。"
+  ],
+  [
+    "What is your favorite animal? Draw it and let your partner guess. Then ask about their favorite animal.",
+    "你最喜歡哪一種動物？畫出來讓對方猜，再問問對方喜歡什麼動物。"
+  ],
+  [
+    "What is your favorite song? Write down the title and ask your partner if they know it.",
+    "你最喜歡哪一首歌？寫下歌名，問問對方有沒有聽過。"
+  ],
+  [
+    "What is your favorite season? Draw something that represents it and share what you like to do during that season.",
+    "你最喜歡哪一個季節？畫出代表這個季節的東西，分享你喜歡在這個季節做什麼。"
+  ],
+  [
+    "Where would you most like to travel? Draw a clue and let your partner guess. Then ask where they would like to go.",
+    "你最想去哪個地方旅行？畫出一個提示讓對方猜，再問問對方想去哪裡。"
+  ],
+  [
+    "Write “Hello” in your language. Teach your partner how to say it, then take a photo holding your paper.",
+    "用自己的語言寫「你好」：教對方怎麼念，再拿著寫好的字拍照。"
+  ],
+  [
+    "Who is your favorite idol? Show a photo or write down their name. Ask your partner if they know them, then ask who their favorite idol is.",
+    "介紹你喜歡的偶像：展示照片或寫下名字，問問對方認不認識，也聽聽對方喜歡誰。"
+  ],
+  [
+    "Draw one thing you had for lunch today. Tell your partner about it and compare your lunches.",
+    "畫出今天午餐吃的一樣食物：向對方介紹，看看彼此的午餐有什麼不同。"
+  ],
+  [
+    "Teach each other a way to make a heart with your hands. Try your partner’s hand gesture and take a photo.",
+    "互相教一種比愛心的方法：學會對方的手勢後拍照。"
+  ],
+  [
+    "Show your usual photo pose. Ask your partner to copy it, then try their pose.",
+    "擺出你平常拍照最常用的姿勢：請對方模仿，再交換模仿對方的姿勢。"
+  ],
+  [
+    "Act out a sport you like. Let your partner guess, then both do the action for a photo.",
+    "用動作表演你喜歡的一項運動：請對方猜，猜中後一起做出這個動作拍照。"
+  ],
+  [
+    "Count from 1 to 10 using your fingers. Take turns and compare your hand gestures. Choose one you do differently and take a photo.",
+    "用手從 1 比到 10：輪流展示，看看手勢有哪些不同，再選一個不同的手勢拍照。"
+  ],
+  [
+    "Recommend a place you would like to take your partner to. Show a picture or draw it, then ask what they would like to do there.",
+    "互相推薦一個想帶對方去的地方：用圖片或簡單的畫介紹，問問對方想在那裡做什麼。"
+  ],
+  [
+    "Teach your partner how to say “delicious” in your language. Practice together, then make a face that shows you are enjoying tasty food and take a photo.",
+    "教對方用你的語言說「好吃」：一起練習，再擺出吃到美食的表情拍照。"
+  ],
+  [
+    "Create a special greeting gesture together. Both do your new gesture and take a photo.",
+    "一起設計你們這組專用的打招呼動作：雙方一起做出這個動作，拍照留念。"
+  ]
 ];
 const LINES = [];
 for (let r=0;r<4;r++) LINES.push([0,1,2,3].map(c=>r*4+c));
@@ -1002,6 +1050,42 @@ function syncRooms(){
   for(const c in ROOMS) if(!want.has(c)){ ROOMS[c].unsub.forEach(u=>u()); delete ROOMS[c]; }
 }
 
+// Upgrade the original question set while keeping opened questions and all game progress.
+const LEGACY_Q = [["What is your phone's lock screen?", "你的手機桌布 / 鎖定畫面是什麼？"], ["Write your partner's name by hand.", "用手寫出對方的名字"], ["Show your favorite snack.", "你最喜歡的零食"], ["What's in your pencil case?", "你的鉛筆盒裡有什麼？"], ["Show the view from your classroom window.", "教室窗外的風景"], ["Draw your favorite animal.", "畫出你最喜歡的動物"], ["Find something blue near you.", "找一個你身邊藍色的東西"], ["Make your funniest face!", "做出你最好笑的鬼臉！"], ["Write \"Hello\" in your language.", "用你的語言寫「你好」"], ["Show your favorite book or comic.", "你最喜歡的書或漫畫"], ["Show something about your hobby.", "跟你的興趣有關的東西"], ["Draw a place you want to travel to.", "畫出你想去旅行的地方"], ["Show something that makes you happy.", "讓你開心的東西"], ["What does your desk look like right now?", "你現在的桌面長怎樣？"], ["Show your school shoes or uniform.", "你的學校制服或鞋子"], ["Make a heart with your hands!", "用手比一個愛心！"]];
+const sameQuestions=(a,b)=>Array.isArray(a)&&a.length===b.length&&a.every((q,i)=>q.en===b[i].en&&(q.zh||'')===(b[i].zh||''));
+// Question IDs and board orders stay fixed; opened IDs keep their original wording.
+function updateUnopenedQuestions(st,questions){
+  const opened=new Set(st.opened||[]);
+  let changed=false;
+  st.questions=st.questions.map((q,qi)=>{
+    if(opened.has(qi)||!questions[qi]||sameQuestions([q],[questions[qi]])) return q;
+    changed=true; return clone(questions[qi]);
+  });
+  return changed?st:undefined;
+}
+async function upgradeEventQuestions(){
+  const latest=defaultQuestions(), legacy=LEGACY_Q.map(([en,zh])=>({en,zh}));
+  let event=await B.get(evPath());
+  if(!event) return;
+  if(sameQuestions(event.questions,legacy)){
+    await B.txn(evPath(),cur=>{
+      if(!cur||!sameQuestions(cur.questions,legacy)) return;
+      return {...cur,questions:clone(latest)};
+    });
+    event=await B.get(evPath());
+  }
+  if(!event||!sameQuestions(event.questions,latest)) return;
+  // Read each room inside its transaction so a concurrent first pick is preserved.
+  for(const code of Object.keys(event.codes||{})){
+    await txnRoom(code,st=>{
+      // Recognize both untouched and partially upgraded rooms; leave custom sets alone.
+      if(st.questions.length!==latest.length||!st.questions.every((q,qi)=>
+        sameQuestions([q],[legacy[qi]])||sameQuestions([q],[latest[qi]]))) return;
+      return updateUnopenedQuestions(st,latest);
+    });
+  }
+}
+
 async function openTeacher(){
   $('setup').classList.add('hidden'); $('game').classList.add('hidden'); $('teacher').classList.remove('hidden');
   document.title='Photo Bingo 16 · Teacher';
@@ -1015,6 +1099,7 @@ async function openTeacher(){
   EVKEY=store.get('pb16t:key'+(T_LOCAL?'L':''));
   if(EVKEY && !(await B.get('pb16/events/'+EVKEY))) EVKEY=null;
   if(!EVKEY){ EVKEY=randCode()+randCode().slice(0,1); await B.set('pb16/events/'+EVKEY,{questions:defaultQuestions(),codes:{},created:B.now()}); store.set('pb16t:key'+(T_LOCAL?'L':''),EVKEY); }
+  try{ await upgradeEventQuestions(); }catch(e){ console.warn('Question upgrade failed',e); toast('題目更新未完成，請確認連線後重新整理'); }
   B.watch(evPath(),v=>{ if(!v) return; EV=v; EV.codes=EV.codes||{}; syncRooms(); renderSetup(); dashDirty(); });
   const firstEv=await B.get(evPath());
   if(firstEv && Object.keys(firstEv.codes||{}).length) setTab('live'); else setTab('setup');
@@ -1086,9 +1171,15 @@ $('dlStudent').onclick=()=>{
   document.body.appendChild(a); a.click(); a.remove(); toast('已下載 photo-bingo-16-student.html','gold');
 };
 $('tEditQ').onclick=()=>openQEditor(EV.questions, async q=>{
-  await txnEvent(ev=>{ ev.questions=q; return ev; }); let n=0;
-  for(const c of evCodes()){ const r=ROOMS[c]; if(r&&r.st&&!r.st.opened.length){ n++; await txnRoom(c,st=>{ if(st.opened.length) return; st.questions=clone(q); return st; }); } }
-  toast(`題目已更新（${n} 間房間）`,'gold'); });
+  try{
+    const saved=await txnEvent(ev=>{ ev.questions=q; return ev; });
+    if(!saved) throw new Error('Event update not committed');
+    let n=0;
+    for(const c of evCodes()){
+      if(await txnRoom(c,st=>updateUnopenedQuestions(st,q))) n++;
+    }
+    toast(`題目已更新（${n} 間房間）；已翻題目與進度保留`,'gold');
+  }catch(e){ console.warn('Question update failed',e); toast('部分題目可能尚未更新，請確認連線後重新儲存'); } });
 $('openEv').onclick=async()=>{ const k=$('evKeyIn').value.trim().toUpperCase(); if(k.length!==6) return toast('活動代碼是 6 個字元');
   if(!(await B.get('pb16/events/'+k))) return toast('找不到這個活動代碼');
   store.set('pb16t:key'+(T_LOCAL?'L':''),k); location.reload(); };
