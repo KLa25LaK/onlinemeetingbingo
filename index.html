@@ -1,0 +1,1444 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Photo Bingo 16</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#fff8ef; --ink:#2b2340; --muted:#7a7090; --card:#ffffff; --line:#eadfce;
+  --a:#ff6b4a; --a-soft:#ffe3da; --b:#3d7bff; --b-soft:#dfe8ff;
+  --ok:#21b47a; --ok-soft:#d9f5e9; --gold:#ffc23d; --gold-soft:#fff1cc;
+  --shadow:0 2px 0 #eadfce, 0 8px 24px rgba(60,40,20,.08);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:"Fredoka","Noto Sans TC",system-ui,sans-serif;
+  background-image:radial-gradient(#f1e4d1 1.2px,transparent 1.2px);background-size:22px 22px}
+button{font:inherit;cursor:pointer;color:inherit}
+input,textarea{font:inherit;color:inherit}
+.hidden{display:none!important}
+.zh{font-family:"Noto Sans TC",sans-serif}
+
+/* ---------- setup ---------- */
+#setup{max-width:560px;margin:0 auto;padding:40px 16px 60px}
+.logo{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+.logo-grid{display:grid;grid-template-columns:repeat(4,12px);gap:3px}
+.logo-grid i{width:12px;height:12px;border-radius:3px;background:var(--line)}
+.logo-grid i.on{background:var(--a)} .logo-grid i.on2{background:var(--b)}
+h1{font-size:40px;margin:0;letter-spacing:-.5px;line-height:1}
+.sub{color:var(--muted);margin:8px 0 26px}
+.panel{background:var(--card);border-radius:20px;padding:22px;box-shadow:var(--shadow);margin-bottom:16px}
+.panel h2{font-size:18px;margin:0 0 12px}
+label.f{display:block;font-size:14px;color:var(--muted);margin:0 0 6px}
+.inp{width:100%;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:#fff;font-size:18px;outline:none}
+.inp:focus{border-color:var(--ink)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.btn{border:none;border-radius:14px;padding:13px 18px;font-size:17px;font-weight:600;background:var(--ink);color:#fff;
+  box-shadow:0 3px 0 rgba(0,0,0,.25);transition:transform .08s}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.25)}
+.btn.a{background:var(--a)} .btn.b{background:var(--b)} .btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--line);box-shadow:none}
+.btn.sm{padding:8px 12px;font-size:14px;border-radius:10px}
+.btn:disabled{opacity:.45;cursor:default}
+.grow{flex:1}
+.check{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--muted);margin-top:14px}
+textarea.qedit{width:100%;min-height:340px;border:2px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.55;font-family:"Noto Sans TC",monospace}
+.hint{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.5}
+.err{color:#d23b2b;font-size:14px;margin-top:8px}
+
+/* ---------- game ---------- */
+#game{display:flex;flex-direction:column;height:100vh}
+header{display:flex;align-items:center;gap:12px;padding:10px 16px;background:var(--card);border-bottom:2px solid var(--line);flex-wrap:wrap}
+.team{display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px}
+.team .dot{width:12px;height:12px;border-radius:50%}
+.score{display:inline-flex;align-items:center;gap:4px;font-size:14px;padding:3px 10px;border-radius:999px;font-weight:600}
+.me-c{color:var(--a)} .them-c{color:var(--b)}
+.score.me{background:var(--a-soft);color:#c2401f} .score.them{background:var(--b-soft);color:#2350b8}
+.vs{color:var(--muted);font-size:14px}
+.status{margin-left:auto;display:flex;align-items:center;gap:8px;font-size:14px;color:var(--muted)}
+.status .led{width:10px;height:10px;border-radius:50%;background:#ccc}
+.status.on .led{background:var(--ok);box-shadow:0 0 0 4px var(--ok-soft)}
+.status.wait .led{background:var(--gold);animation:blink 1s infinite}
+@keyframes blink{50%{opacity:.3}}
+.code{font-weight:700;letter-spacing:3px;background:var(--gold-soft);padding:4px 10px;border-radius:8px;color:var(--ink)}
+
+main{flex:1;display:flex;gap:18px;padding:18px;min-height:0}
+.board-wrap{flex:1;display:flex;align-items:center;justify-content:center;min-width:0;min-height:0}
+#board{display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:10px;width:min(100%,calc(100vh - 120px));aspect-ratio:1}
+.cell{position:relative;border:none;border-radius:16px;background:var(--card);box-shadow:var(--shadow);padding:10px;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;overflow:hidden;
+  transition:transform .12s, box-shadow .12s}
+.cell:hover{transform:translateY(-2px)}
+.cell .num{position:absolute;top:6px;left:9px;font-size:12px;color:var(--muted);font-weight:600}
+.cell .en{font-size:clamp(11px,1.45vw,17px);font-weight:600;line-height:1.15}
+.cell .czh{font-size:clamp(10px,1.05vw,13px);color:var(--muted);margin-top:4px;font-family:"Noto Sans TC",sans-serif;line-height:1.25}
+.cell .marks{position:absolute;bottom:6px;left:0;right:0;display:flex;justify-content:center;gap:5px}
+.pill{font-size:11px;padding:1px 7px;border-radius:999px;font-weight:600}
+.pill.me{background:var(--a-soft);color:#c2401f} .pill.them{background:var(--b-soft);color:#2350b8}
+.cell.active{outline:4px solid var(--ink);outline-offset:-4px}
+.cell.flash{animation:flash 1.2s 2}
+@keyframes flash{50%{box-shadow:0 0 0 6px var(--b),var(--shadow)}}
+.cell.done{padding:0;background:var(--ok)}
+.cell.done .ph{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr}
+.cell.done .ph img{width:100%;height:100%;object-fit:cover;display:block}
+.cell.done .cap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.7));color:#fff;
+  font-size:clamp(9px,1vw,12px);padding:14px 6px 5px;line-height:1.15}
+.cell.done .tick{position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:var(--ok);color:#fff;
+  display:grid;place-items:center;font-size:14px;font-weight:700;box-shadow:0 0 0 2px #fff}
+#board{position:relative}
+.frame{position:absolute;border:4px solid var(--fc);border-radius:20px;pointer-events:none;z-index:3;
+  box-shadow:0 0 12px color-mix(in srgb,var(--fc) 55%,transparent)}
+.frame.new{animation:frameIn .9s ease}
+@keyframes frameIn{0%{opacity:0;transform:scale(1.08)}40%{opacity:1}60%{transform:scale(.99)}100%{transform:scale(1)}}
+/* face-down */
+.cell.back{background:var(--ink);color:#fff;
+  background-image:repeating-linear-gradient(45deg,rgba(255,255,255,.06) 0 10px,transparent 10px 20px)}
+.cell.back .bnum{font-size:clamp(26px,4vw,48px);font-weight:700;line-height:1}
+.cell.back .q{font-size:clamp(12px,1.4vw,16px);opacity:.55;margin-top:2px}
+.cell.back .num{display:none}
+.cell.locked{cursor:not-allowed}
+.cell.locked:hover{transform:none}
+#board.pickable .cell.back{background-color:var(--a)}
+#board.pickable .cell.back:hover{transform:translateY(-3px) scale(1.02)}
+.cell.current{outline:4px solid var(--a);outline-offset:-4px;animation:pulse 1.6s infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 6px var(--a-soft),var(--shadow)}}
+.cell.reveal{animation:flipIn .55s ease}
+@keyframes flipIn{0%{transform:rotateY(90deg)}100%{transform:rotateY(0)}}
+.turn{margin:0 auto;font-weight:600;font-size:15px;padding:6px 14px;border-radius:999px;background:var(--line)}
+.turn.mine{background:var(--a);color:#fff;animation:pulseT 1.4s infinite}
+.turn.theirs{background:var(--b-soft);color:#2350b8}
+.turn.answer{background:var(--gold-soft);color:#8a5a00}
+@keyframes pulseT{50%{box-shadow:0 0 0 5px var(--a-soft)}}
+/* reveal popup */
+#revealModal .modal-box{max-width:560px;text-align:center;padding:30px 26px;animation:popIn .45s cubic-bezier(.2,1.4,.4,1)}
+@keyframes popIn{from{transform:scale(.6) rotate(-4deg);opacity:0}}
+.rv-who{display:inline-block;font-weight:700;font-size:14px;padding:4px 14px;border-radius:999px;color:#fff}
+.rv-q{font-size:32px;font-weight:600;line-height:1.2;margin:18px 0 6px}
+.rv-zh{font-size:19px;color:var(--muted);font-family:"Noto Sans TC",sans-serif}
+.rv-pos{margin:20px auto 0;display:inline-grid;grid-template-columns:repeat(4,22px);gap:4px}
+.rv-pos i{width:22px;height:22px;border-radius:5px;background:var(--line)}
+.rv-pos i.here{background:var(--a)}
+.rv-postxt{font-size:14px;color:var(--muted);margin-top:8px}
+
+aside{width:360px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;overflow:auto}
+.qcard{background:var(--card);border-radius:20px;padding:20px;box-shadow:var(--shadow)}
+.qcard .lbl{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600}
+.qcard .qen{font-size:24px;font-weight:600;line-height:1.2;margin:8px 0 4px}
+.qcard .qzh{font-size:16px;color:var(--muted);font-family:"Noto Sans TC",sans-serif}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.slot{border-radius:14px;aspect-ratio:3/4;border:2px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:6px;font-size:13px;color:var(--muted);overflow:hidden;position:relative;background:#fffdf9;text-align:center;padding:6px}
+.slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.slot .who{position:absolute;top:6px;left:6px;z-index:2;font-size:12px;font-weight:700;padding:2px 8px;border-radius:999px}
+.slot.me .who{background:var(--a);color:#fff} .slot.them .who{background:var(--b);color:#fff}
+.slot .big{font-size:30px}
+.upbtns{display:flex;gap:8px;margin-top:12px}
+.upbtns .btn{flex:1;font-size:15px;padding:11px}
+.empty{color:var(--muted);text-align:center;padding:30px 10px;line-height:1.6}
+.how{font-size:13px;color:var(--muted);line-height:1.6;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
+.how b{color:var(--ink)}
+
+/* overlays */
+.modal{position:fixed;inset:0;background:rgba(30,20,40,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+.modal-box{background:var(--card);border-radius:20px;padding:18px;max-width:900px;width:100%;max-height:92vh;overflow:auto}
+#camVideo{width:100%;border-radius:12px;background:#000;max-height:60vh;transform:scaleX(-1)}
+.lb-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.lb-grid figure{margin:0}
+.lb-grid img{width:100%;border-radius:12px;max-height:70vh;object-fit:contain;background:#f3ece1}
+.lb-grid figcaption{font-weight:600;margin-top:6px}
+#toasts{position:fixed;top:70px;left:50%;transform:translateX(-50%);z-index:60;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--ink);color:#fff;padding:10px 18px;border-radius:999px;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.2);animation:tin .3s}
+.toast.b{background:var(--b)} .toast.gold{background:var(--gold);color:var(--ink)}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}}
+#bingo{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:70;pointer-events:none}
+#bingo .t{font-size:clamp(70px,14vw,180px);font-weight:700;color:var(--a);-webkit-text-stroke:4px #fff;paint-order:stroke;
+  text-shadow:0 8px 0 rgba(0,0,0,.15);animation:boom 2.6s ease forwards}
+#bingo .s{font-size:28px;font-weight:600;background:#fff;padding:6px 20px;border-radius:999px;animation:boom 2.6s ease forwards;box-shadow:var(--shadow)}
+#bingo.them .t{color:var(--b);font-size:clamp(44px,7.5vw,96px);text-align:center;line-height:1.05}
+#bingo.them .s{font-size:clamp(17px,2.2vw,24px);max-width:min(92vw,760px);text-align:center;border-radius:22px;margin-top:12px;line-height:1.4}
+@keyframes boom{0%{transform:scale(.2) rotate(-8deg);opacity:0}15%{transform:scale(1.15) rotate(3deg);opacity:1}25%{transform:scale(1) rotate(0)}80%{opacity:1}100%{opacity:0;transform:scale(1.05)}}
+#fx{position:fixed;inset:0;pointer-events:none;z-index:65}
+
+@media (max-width:900px){
+  #game{height:auto;min-height:100vh}
+  main{flex-direction:column;padding:12px}
+  #board{width:100%}
+  aside{width:100%}
+  .cell .en{font-size:12px}.cell .czh{display:none}.cell .num{display:none}
+  header{gap:8px;padding:8px 12px}.team{font-size:16px}.code{font-size:13px;letter-spacing:2px}
+  .turn{order:10;width:100%;text-align:center}
+}
+
+/* ---------- multi-device additions ---------- */
+.tb{display:flex;flex-direction:column;gap:4px;min-width:0}
+.mem{display:flex;gap:4px;flex-wrap:wrap}
+.chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#f3ece1;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap}
+.chip i{width:7px;height:7px;border-radius:50%;background:#c9c0b3;flex-shrink:0}
+.chip.on i{background:var(--ok)}
+.chip.you{background:var(--ink);color:#fff}
+.chip.up{box-shadow:0 0 0 2px var(--gold);font-weight:600;color:var(--ink);background:var(--gold-soft)}
+.chip.you.up{background:var(--ink);color:#fff}
+.qcard.mine-up{box-shadow:0 0 0 4px var(--a),var(--shadow)}
+.upnote{margin-top:14px;padding:10px 12px;border-radius:12px;background:var(--gold-soft);font-size:14px;line-height:1.5;text-align:center}
+.upnote.me{background:var(--a);color:#fff;font-weight:600;font-size:17px;animation:pulseT 1.4s infinite}
+.upnote small{display:block;font-weight:400;font-size:13px;opacity:.9}
+.linkbtn{background:none;border:none;color:var(--b);text-decoration:underline;font-size:13px;margin-top:6px;padding:4px}
+.slot .loading{font-size:13px}
+.rv-up{margin-top:18px;font-size:15px;line-height:1.6;background:#f7f1e8;border-radius:14px;padding:10px 14px}
+.rv-up b{font-weight:600}
+.rv-me{margin-top:12px;font-size:22px;font-weight:700;color:#fff;background:var(--a);border-radius:14px;padding:10px 14px;animation:pulseT 1.4s infinite}
+#lobbyModal .modal-box{max-width:480px}
+.lobby-team{display:flex;flex-direction:column;gap:10px;margin-top:14px}
+.lobby-team .btn{width:100%;text-align:left;display:flex;justify-content:space-between;align-items:center}
+.lobby-team .cnt{font-size:13px;opacity:.85;font-weight:500}
+
+/* ---------- teacher console ---------- */
+#teacher{min-height:100vh}
+.t-head{position:sticky;top:0;z-index:20}
+.tabs{display:flex;gap:6px;background:#f3ece1;padding:4px;border-radius:12px}
+.tab{border:none;background:none;padding:7px 14px;border-radius:9px;font-weight:600;font-size:15px;color:var(--muted)}
+.tab.on{background:#fff;color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.t-wrap{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+.t-wrap .panel h2{display:flex;align-items:center;gap:8px}
+.rtable{width:100%;border-collapse:collapse;font-size:15px}
+.rtable th{text-align:left;font-size:12px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:1px;padding:6px 6px}
+.rtable td{padding:5px 6px;border-top:1px solid var(--line);vertical-align:middle}
+.rtable input{width:100%;padding:8px 10px;border:2px solid var(--line);border-radius:10px;font-size:15px;background:#fff}
+.rtable .cd{font-weight:700;letter-spacing:2px;background:var(--gold-soft);padding:4px 8px;border-radius:8px;white-space:nowrap}
+.rtable .x{background:none;border:none;font-size:18px;color:var(--muted)}
+.tbl-scroll{overflow-x:auto}
+.qprev{font-size:14px;color:var(--muted);line-height:1.6;columns:2;column-gap:24px}
+.qprev li{break-inside:avoid}
+textarea.share{width:100%;min-height:150px;border:2px solid var(--line);border-radius:12px;padding:12px;font-size:14px;line-height:1.6;font-family:"Noto Sans TC",monospace;background:#fffdf9}
+.sum{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.stat{background:var(--card);border-radius:14px;padding:10px 16px;box-shadow:var(--shadow);font-size:14px;color:var(--muted)}
+.stat b{display:block;font-size:24px;color:var(--ink);line-height:1.1}
+.notice-bar{display:flex;gap:8px;flex:1;min-width:280px}
+.room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:16px}
+.rcard{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:9px;border:3px solid transparent;cursor:pointer;transition:transform .1s}
+.rcard:hover{transform:translateY(-2px)}
+.rcard.warn{border-color:var(--gold)} .rcard.bad{border-color:#e5484d}
+.rc-top{display:flex;align-items:center;gap:8px}
+.rc-top .lbl2{font-weight:600;font-size:18px}
+.rc-top .cd{font-size:12px;font-weight:700;letter-spacing:2px;background:var(--gold-soft);padding:2px 7px;border-radius:6px}
+.spill{margin-left:auto;font-size:12px;font-weight:600;padding:3px 9px;border-radius:999px;background:#eee;color:var(--muted);white-space:nowrap}
+.spill.play{background:var(--ok-soft);color:#11784f} .spill.wait{background:#f3ece1} .spill.done{background:var(--gold-soft);color:#8a5a00}
+.rc-team{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:14px}
+.rc-team .tnm{font-weight:600;min-width:0}
+.rc-team .ln{font-size:12px;font-weight:600;padding:1px 7px;border-radius:999px}
+.prog{height:8px;background:#f3ece1;border-radius:99px;overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ok);border-radius:99px}
+.rc-now{font-size:13px;line-height:1.45;background:#faf6ef;border-radius:10px;padding:8px 10px}
+.rc-now .alert{color:#c62f33;font-weight:600}
+.rc-now .amber{color:#9a6400;font-weight:600}
+.rc-thumbs{display:flex;gap:5px}
+.rc-thumbs img{width:46px;height:46px;object-fit:cover;border-radius:8px}
+.dm-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.mini{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.mini div{aspect-ratio:1;border-radius:8px;background:var(--ink);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;text-align:center;padding:3px;overflow:hidden;position:relative;line-height:1.1}
+.mini div.op{background:#fff;color:var(--ink);border:2px solid var(--a)}
+.mini div.dn{padding:0;background:var(--ok)}
+.mini div.dn img{width:50%;height:100%;object-fit:cover;cursor:zoom-in}
+.mini div.wn::after{content:"";position:absolute;inset:0;border:3px solid var(--gold);border-radius:8px;pointer-events:none}
+.mtable{width:100%;border-collapse:collapse;font-size:14px}
+.mtable td{padding:6px 4px;border-top:1px solid var(--line)}
+.mtable select{padding:6px;border-radius:8px;border:2px solid var(--line);font:inherit}
+.sec-t{font-size:12px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:600;margin:16px 0 8px}
+#noticeBox{position:fixed;top:14px;left:50%;transform:translateX(-50%);z-index:80;background:var(--ink);color:#fff;padding:14px 22px;border-radius:18px;
+  font-size:20px;font-weight:600;box-shadow:0 12px 40px rgba(0,0,0,.3);max-width:min(92vw,720px);text-align:center;animation:popIn .4s}
+#noticeBox small{display:block;font-size:12px;opacity:.7;font-weight:500;margin-bottom:2px;letter-spacing:1px}
+.tlink{display:block;text-align:center;margin-top:28px;color:var(--muted);font-size:14px}
+@media (max-width:760px){ .dm-grid{grid-template-columns:1fr} .qprev{columns:1} }
+
+#lbModal{z-index:56}
+.mini{max-width:360px}
+details summary{padding:4px 0}
+code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
+
+/* ---------- watch mode ---------- */
+#game.watch .how{display:none}
+#game.watch aside{width:330px}
+.wboards{display:flex;gap:22px;width:100%;align-items:flex-start;justify-content:center}
+.wcol{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:8px}
+.wtitle{display:flex;align-items:center;gap:8px;font-weight:600;font-size:18px}
+.wboard{position:relative;display:grid;grid-template-columns:repeat(4,1fr);grid-template-rows:repeat(4,1fr);gap:8px;aspect-ratio:1;width:min(100%,calc(100vh - 190px))}
+.wboard .cell{cursor:default}
+.wboard .cell .en{font-size:clamp(10px,1.05vw,15px)}
+.wboard .cell .czh{font-size:clamp(9px,.8vw,12px)}
+.wboard .cell.back .bnum{font-size:clamp(20px,2.6vw,40px)}
+#wStart{z-index:90}
+@media (max-width:900px){ .wboards{flex-direction:column} #game.watch aside{width:100%} .wboard{width:100%} }
+</style>
+</head>
+<body>
+
+<!-- ================= STUDENT SETUP ================= -->
+<div id="setup">
+  <div class="logo">
+    <div class="logo-grid"><i class="on"></i><i></i><i></i><i class="on2"></i><i></i><i class="on"></i><i class="on2"></i><i></i><i></i><i class="on2"></i><i class="on"></i><i></i><i class="on2"></i><i></i><i></i><i class="on"></i></div>
+    <h1>Photo Bingo 16</h1>
+  </div>
+  <p class="sub">Enter your name and the room code from your teacher. <span class="zh">輸入你的名字和老師給的房間代碼。</span></p>
+
+  <div class="panel" id="resumePanel" style="display:none">
+    <h2>Continue <span class="zh">回到剛剛的房間</span></h2>
+    <div class="row"><button class="btn grow" id="resumeBtn"></button></div>
+  </div>
+
+  <div class="panel">
+    <label class="f">Your name <span class="zh">你的名字</span></label>
+    <input class="inp" id="myName" placeholder="e.g. Amy" maxlength="20">
+    <label class="f" style="margin-top:14px">Room code <span class="zh">房間代碼</span></label>
+    <div class="row">
+      <input class="inp grow" id="joinCode" placeholder="CODE" maxlength="5" style="text-transform:uppercase;letter-spacing:4px;font-weight:700">
+      <button class="btn b" id="joinBtn">Join 加入</button>
+    </div>
+    <div class="err" id="setupErr"></div>
+  </div>
+
+  <label class="check"><input type="checkbox" id="localMode"> 本機測試模式（只在老師事先試玩時使用）</label>
+  <a href="#teacher" class="tlink" id="toTeacher">🧑‍🏫 Teacher console 老師後台 →</a>
+</div>
+
+<!-- question editor -->
+<div class="modal hidden" id="qModal">
+  <div class="modal-box" style="max-width:640px">
+    <h2 style="margin:0 0 6px">Edit 16 questions <span class="zh">編輯 16 題</span></h2>
+    <div class="hint" style="margin:0 0 10px">一行一題，格式：<b>English | 中文</b>（中文可省略）。必須剛好 16 行。</div>
+    <textarea class="qedit" id="qText"></textarea>
+    <div class="err" id="qErr"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost sm" id="qReset">還原預設題目</button>
+      <span class="grow"></span>
+      <button class="btn ghost sm" id="qCancel">取消</button>
+      <button class="btn sm" id="qSave">儲存</button>
+    </div>
+  </div>
+</div>
+
+<!-- team picker -->
+<div class="modal hidden" id="lobbyModal">
+  <div class="modal-box">
+    <h2 style="margin:0">Choose your team <span class="zh">選擇你的隊伍</span></h2>
+    <div id="lobbyBody"></div>
+  </div>
+</div>
+
+<!-- ================= GAME ================= -->
+<div id="game" class="hidden">
+  <header>
+    <div class="tb" id="tMe"></div>
+    <span class="vs">vs</span>
+    <div class="tb" id="tThem"></div>
+    <span class="turn" id="turn"></span>
+    <div class="status wait" id="status" style="margin-left:0"><span class="led"></span><span id="statusTxt">Connecting…</span></div>
+    <span class="code" id="hCode" title="Room code"></span>
+    <button class="btn ghost sm" id="exitBtn">Exit</button>
+  </header>
+  <main>
+    <div class="board-wrap"><div id="board"></div></div>
+    <aside>
+      <div class="qcard" id="qcard"></div>
+      <div class="how">
+        <b>How to play 玩法</b><br>
+        1. Teams take turns picking a hidden square. <span class="zh">兩隊輪流翻一格，隊上任何人都可以點。</span><br>
+        2. The question pops up for everyone — but in a different spot on each team's board. <span class="zh">題目會同時跳出，但兩隊的位置不一樣！</span><br>
+        3. The game picks one uploader per team (📸). <span class="zh">系統每題在每隊指定一位上傳者，輪流換人。</span><br>
+        4. Both teams' photos in → square done → next pick. <span class="zh">兩隊都上傳，這格才完成，才能翻下一格。</span><br>
+        5. 4 in a row = <b>BINGO!</b>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- camera -->
+<div class="modal hidden" id="camModal">
+  <div class="modal-box" style="max-width:640px">
+    <video id="camVideo" autoplay playsinline muted></video>
+    <div class="err" id="camErr"></div>
+    <div class="row" style="margin-top:12px">
+      <button class="btn ghost" id="camCancel">Cancel 取消</button>
+      <span class="grow"></span>
+      <button class="btn a" id="camSnap">📸 Take photo 拍照</button>
+    </div>
+  </div>
+</div>
+
+<!-- lightbox -->
+<div class="modal hidden" id="lbModal">
+  <div class="modal-box">
+    <div style="display:flex;align-items:start;gap:10px;margin-bottom:12px">
+      <div class="grow"><div style="font-size:22px;font-weight:600" id="lbQ"></div><div class="zh" style="color:var(--muted)" id="lbQzh"></div></div>
+      <button class="btn ghost sm" id="lbClose">Close ✕</button>
+    </div>
+    <div class="lb-grid" id="lbGrid"></div>
+  </div>
+</div>
+
+<!-- reveal popup -->
+<div class="modal hidden" id="revealModal">
+  <div class="modal-box">
+    <span class="rv-who" id="rvWho"></span>
+    <div class="rv-q" id="rvQ"></div>
+    <div class="rv-zh" id="rvZh"></div>
+    <div class="rv-pos" id="rvPos"></div>
+    <div class="rv-postxt" id="rvPosTxt"></div>
+    <div class="rv-up" id="rvUp"></div>
+    <div class="rv-me hidden" id="rvMe">📸 You upload this one!<br>這題由你上傳！</div>
+    <div style="margin-top:20px"><button class="btn a" id="rvOk">Let's answer! 開始回答</button></div>
+  </div>
+</div>
+
+
+<!-- ================= TEACHER CONSOLE ================= -->
+<div id="teacher" class="hidden">
+  <header class="t-head">
+    <div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
+    <div class="tabs"><button class="tab on" data-tab="setup">Setup 設定</button><button class="tab" data-tab="live">Live 監控</button></div>
+    <div class="status wait" id="tStatus" style="margin-left:auto"><span class="led"></span><span id="tStatusTxt">Offline</span></div>
+    <a class="btn ghost sm" href="#" id="tExit" style="text-decoration:none">Student page 學生頁</a>
+    <button class="btn ghost sm" id="tLock" title="Lock">🔒 Lock 登出</button>
+  </header>
+
+  <section id="tSetup" class="t-wrap">
+    <div class="panel" id="pConn">
+      <h2>0 · Connection <span class="zh">連線設定（只要做一次）</span></h2>
+      <div id="connState" style="font-size:15px"></div>
+      <div id="cfgBox">
+        <details style="margin-top:12px" id="guide">
+          <summary style="cursor:pointer;font-weight:600">📘 How to set up Firebase 建立免費的 Firebase 專案（約 10 分鐘）</summary>
+          <ol class="hint" style="font-size:14px;line-height:1.8;color:var(--ink)">
+            <li>打開 <b>console.firebase.google.com</b>，用學校或自己的 Google 帳號登入，按「建立專案」。名稱隨意（例如 photo-bingo），Google Analytics 可以關掉。</li>
+            <li>左側選單「建構 Build」→「<b>Realtime Database</b>」→「建立資料庫」。位置選 <b>新加坡 (asia-southeast1)</b>，選「以鎖定模式啟動」。（注意：是 Realtime Database，不是 Firestore。）</li>
+            <li>在 Realtime Database 上方點「<b>規則 Rules</b>」分頁，把內容整段換成下面這段，按「發布」。
+              <textarea class="share" id="rulesTxt" readonly style="min-height:190px;margin-top:6px">{
+  "rules": {
+    "pb16": {
+      "events": { "$key": { ".read": true, ".write": true } },
+      "rooms": { "$code": { ".read": true, ".write": true,
+        "photos": { "$p": { ".validate": "newData.isString() && newData.val().length < 1500000" } } } }
+    }
+  }
+}</textarea>
+              <button class="btn ghost sm" id="copyRules" type="button">Copy rules 複製規則</button></li>
+            <li>回到「專案總覽」，按 <b>&lt;/&gt;</b>（網頁）圖示新增網頁應用程式，名稱隨意，<b>不用</b>勾選 Hosting，按「註冊應用程式」。</li>
+            <li>畫面會出現一段 <code>const firebaseConfig = { … }</code>，整段複製，貼到下面的框，按「儲存並連線」。</li>
+          </ol>
+          <div class="hint">費用：免費的 Spark 方案就夠用，不需要綁信用卡。限制是同時最多約 100 台裝置連線（12 個房間 × 5 人 + 老師沒問題）。</div>
+        </details>
+        <textarea class="share" id="cfgTxt" placeholder="在這裡貼上 firebaseConfig（要包含 apiKey 和 databaseURL）" style="margin-top:12px;min-height:120px"></textarea>
+        <div class="err" id="cfgErr"></div>
+        <div class="hint">如果貼上的設定裡沒有 <b>databaseURL</b>：到 Realtime Database 頁面，複製上方 https://…firebasedatabase.app 的網址，在設定裡加一行 <code>databaseURL: "那個網址",</code>。</div>
+        <div class="row" style="margin-top:10px"><button class="btn a" id="cfgSave">Save & connect 儲存並連線</button></div>
+      </div>
+      <label class="check"><input type="checkbox" id="tLocal"> 本機測試模式（不連網路，在這台電腦開幾個學生分頁試玩；學生頁也要勾）</label>
+    </div>
+    <div class="panel" id="pQ">
+      <h2>1 · Questions <span class="zh">題目（所有房間共用）</span></h2>
+      <ol class="qprev" id="qPrev"></ol>
+      <button class="btn ghost sm" id="tEditQ">Edit questions 編輯題目</button>
+      <div class="hint">已經開始玩的房間不會被改到，只會套用到還沒翻任何一格的房間。</div>
+    </div>
+    <div class="panel" id="pRooms">
+      <h2>2 · Rooms <span class="zh">房間</span></h2>
+      <div class="row" style="align-items:end">
+        <div class="grow"><label class="f">Team 1 name 第一隊（先選）</label><input class="inp" id="defA" value="Taiwan 台灣" maxlength="24"></div>
+        <div class="grow"><label class="f">Team 2 name 第二隊</label><input class="inp" id="defB" value="Japan 日本" maxlength="24"></div>
+        <div style="width:110px"><label class="f">How many 幾間</label><input class="inp" id="defN" type="number" min="1" max="20" value="12"></div>
+        <button class="btn a" id="addRooms">Add rooms 新增</button>
+      </div>
+      <div class="tbl-scroll" style="margin-top:16px"><table class="rtable" id="roomTable"></table></div>
+      <div class="hint">房間名稱和隊名可以直接改（例如寫上組別）。代碼是固定的，提前發給學生也沒問題。</div>
+    </div>
+    <div class="panel" id="pShare">
+      <h2>3 · Send to students <span class="zh">發給學生</span></h2>
+      <div class="row"><button class="btn a" id="dlStudent">⬇ Download student file 下載學生版檔案</button></div>
+      <div class="hint" style="margin-bottom:12px">學生版檔案已經內建連線設定，把它和下面的房間清單一起傳給學生（兩國學生用同一個檔案）。</div>
+      <textarea class="share" id="shareTxt" readonly></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn" id="copyList">Copy list 複製房間清單</button></div>
+    </div>
+    <div class="panel" id="pEvent">
+      <h2>4 · Other devices <span class="zh">在其他電腦或手機監控</span></h2>
+      <div style="font-size:15px">活動代碼 Event key：<span class="code" id="evKey">—</span></div>
+      <div class="hint">在另一台裝置打開學生版檔案 → 老師後台 → 輸入活動代碼，就能一起監控（例如另一位老師、或用手機巡堂）。<b>請不要把活動代碼給學生。</b></div>
+      <div class="row" style="margin-top:10px"><input class="inp grow" id="evKeyIn" placeholder="EVENT KEY" maxlength="6" style="text-transform:uppercase;letter-spacing:3px;font-weight:700;max-width:260px"><button class="btn ghost" id="openEv">Open event 開啟活動</button></div>
+      <div class="row" style="margin-top:16px"><button class="btn ghost sm" id="tWipe">Delete this event 刪除這個活動的所有房間與照片</button></div>
+    </div>
+  </section>
+
+  <section id="tLive" class="t-wrap hidden">
+    <div class="sum" id="tSummary"></div>
+    <div class="panel" style="margin-top:14px;padding:14px 16px">
+      <div class="row" style="align-items:center">
+        <div class="notice-bar"><input class="inp" id="noticeAll" placeholder="Message to every room… 傳訊息給所有房間（例如：剩 5 分鐘！）" maxlength="120"><button class="btn" id="sendAll">📢 Send</button></div>
+      </div>
+    </div>
+    <div class="room-grid" id="roomGrid"></div>
+  </section>
+</div>
+
+<div class="modal hidden" id="roomModal">
+  <div class="modal-box" style="max-width:1100px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <div style="font-size:22px;font-weight:600" id="rmTitle"></div>
+      <span class="grow"></span>
+      <button class="btn ghost sm" id="rmClose">Close ✕</button>
+    </div>
+    <div class="row" style="margin-top:12px"><input class="inp grow" id="rmNotice" placeholder="Message to this room 傳訊息給這個房間" maxlength="120"><button class="btn sm" id="rmSend">📢 Send</button></div>
+    <div id="rmBody"></div>
+  </div>
+</div>
+
+<input type="file" id="fileIn" accept="image/*" class="hidden">
+<div id="toasts"></div>
+<div id="bingo" class="hidden"></div>
+<canvas id="fx"></canvas>
+
+<script>
+
+/* ======================= DATA ======================= */
+const DEFAULT_Q = [
+  ["What is your phone's lock screen?","你的手機桌布 / 鎖定畫面是什麼？"],
+  ["Write your partner's name by hand.","用手寫出對方的名字"],
+  ["Show your favorite snack.","你最喜歡的零食"],
+  ["What's in your pencil case?","你的鉛筆盒裡有什麼？"],
+  ["Show the view from your classroom window.","教室窗外的風景"],
+  ["Draw your favorite animal.","畫出你最喜歡的動物"],
+  ["Find something blue near you.","找一個你身邊藍色的東西"],
+  ["Make your funniest face!","做出你最好笑的鬼臉！"],
+  ["Write \"Hello\" in your language.","用你的語言寫「你好」"],
+  ["Show your favorite book or comic.","你最喜歡的書或漫畫"],
+  ["Show something about your hobby.","跟你的興趣有關的東西"],
+  ["Draw a place you want to travel to.","畫出你想去旅行的地方"],
+  ["Show something that makes you happy.","讓你開心的東西"],
+  ["What does your desk look like right now?","你現在的桌面長怎樣？"],
+  ["Show your school shoes or uniform.","你的學校制服或鞋子"],
+  ["Make a heart with your hands!","用手比一個愛心！"]
+];
+const LINES = [];
+for (let r=0;r<4;r++) LINES.push([0,1,2,3].map(c=>r*4+c));
+for (let c=0;c<4;c++) LINES.push([0,1,2,3].map(r=>r*4+c));
+LINES.push([0,5,10,15],[3,6,9,12]);
+const PREFIX='pb16v3-room-', BCPREFIX='pb16v3-';
+const SIDES=['A','B'];
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const mk=t=>({get(k){try{return JSON.parse(t().getItem(k))}catch(e){return null}},set(k,v){try{t().setItem(k,JSON.stringify(v));return true}catch(e){return false}},del(k){try{t().removeItem(k)}catch(e){}}});
+const store=mk(()=>localStorage), sstore=mk(()=>sessionStorage);
+const clone=o=>JSON.parse(JSON.stringify(o));
+const other=s=>s==='A'?'B':'A';
+const randCode=()=>Array.from({length:5},()=>'ABCDEFGHJKMNPQRSTUVWXYZ23456789'[Math.floor(Math.random()*31)]).join('');
+const newId=()=>Math.random().toString(36).slice(2,10)+Date.now().toString(36).slice(-4);
+function shuffle16(){ const o=[...Array(16).keys()]; for(let i=15;i>0;i--){const j=Math.floor(Math.random()*(i+1));[o[i],o[j]]=[o[j],o[i]]} return o; }
+const defaultQuestions=()=>DEFAULT_Q.map(([en,zh])=>({en,zh}));
+
+/* room state (shared shape):
+   {code,label,questions,teams:{A:{name,order,lines},B:{…}},members:[{id,name,side,online}],
+    opened:[qi…], who:{qi:{picker,A,B}}, got:{qi:{A,B}}, rot:{A,B}, openedAt:{qi:ms}, updated:ms} */
+const isDoneIn=(st,qi)=>{const g=st.got[qi];return !!(g&&g.A&&g.B)};
+const curIn=st=>{const l=st.opened[st.opened.length-1];return (l!=null&&!isDoneIn(st,l))?l:null};
+const turnIn=st=>st.opened.length%2===0?'A':'B';
+const readyIn=st=>!!st.teams.B && SIDES.every(s=>st.members.some(m=>m.side===s&&m.online));
+const linesIn=(st,side)=>{const t=st.teams[side]; if(!t) return 0; return LINES.filter(l=>l.every(p=>isDoneIn(st,t.order[p]))).length;};
+
+
+/* =====================================================================
+   BACKEND — every device talks to the cloud database directly.
+   Two interchangeable implementations with the same tiny interface:
+     watch(path, cb) → unsubscribe      cb(value|null) now and on every change
+     set(path, v) / remove(path)        → Promise
+     txn(path, fn)                      → Promise<bool committed>; fn(cur) returns new value or undefined to abort
+     presence(path)                     marks this device online at path; cleared automatically on disconnect
+     onConnected(cb), now()
+   • Firebase Realtime Database (real events)
+   • Local fake on localStorage + BroadcastChannel (本機測試模式, same app code path)
+   Paths used:  pb16/events/{key}            {questions, codes:{code:order}, created}
+                pb16/rooms/{code}/st         room state as a JSON string (changed only by transactions)
+                pb16/rooms/{code}/on/{id}    presence
+                pb16/rooms/{code}/photos/{qi}_{side}   compressed JPEG data URL
+                pb16/rooms/{code}/notice     {id,text,t}
+   ===================================================================== */
+const EMBED_CFG={"apiKey": "AIzaSyBKqNHqdCCTK7YgNFWSExiAdP-ajlpJigM", "authDomain": "onlinemeetingbingo.firebaseapp.com", "databaseURL": "https://onlinemeetingbingo-default-rtdb.asia-southeast1.firebasedatabase.app", "projectId": "onlinemeetingbingo", "appId": "1:741640506211:web:1b1f5d90912f64608e2156"}; // ← filled in automatically when the teacher downloads the student file
+const SRC0='<!doctype html>\n'+document.documentElement.outerHTML;
+const FB_VER='10.12.2';
+let B=null;
+
+function parseFirebaseConfig(text){
+  if(!text) return null;
+  const get=k=>{ const m=String(text).match(new RegExp(`["']?${k}["']?\\s*:\\s*["']([^"']+)["']`)); return m?m[1]:null; };
+  const cfg={apiKey:get('apiKey'),authDomain:get('authDomain'),databaseURL:get('databaseURL'),projectId:get('projectId'),appId:get('appId')};
+  if(!cfg.databaseURL||!cfg.apiKey) return null;
+  Object.keys(cfg).forEach(k=>cfg[k]==null&&delete cfg[k]);
+  return cfg;
+}
+const savedConfig=()=>EMBED_CFG||store.get('pb16:fbcfg');
+
+function loadScript(u){ return new Promise((res,rej)=>{ const s=document.createElement('script'); s.src=u; s.onload=res; s.onerror=rej; document.head.appendChild(s); }); }
+async function makeFirebaseBackend(cfg){
+  if(!window.firebase||!firebase.database){
+    await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-app-compat.js`);
+    await loadScript(`https://www.gstatic.com/firebasejs/${FB_VER}/firebase-database-compat.js`);
+  }
+  const app=firebase.apps.length?firebase.app():firebase.initializeApp(cfg);
+  const db=app.database();
+  let offset=0; db.ref('.info/serverTimeOffset').on('value',s=>offset=s.val()||0);
+  const conn=db.ref('.info/connected');
+  return {
+    kind:'firebase',
+    watch(path,cb){ const r=db.ref(path), h=s=>cb(s.val()); r.on('value',h,err=>{ console.warn('watch',path,err); cb.error&&cb.error(err); }); return ()=>r.off('value',h); },
+    set:(path,v)=>db.ref(path).set(v),
+    remove:path=>db.ref(path).remove(),
+    async txn(path,fn){
+      // null on the first call can just mean "not cached yet": returning null makes the server retry with the real value
+      const res=await db.ref(path).transaction(cur=>cur==null?null:fn(cur),undefined,false);
+      return res.committed && res.snapshot.val()!=null;
+    },
+    presence(path){ const r=db.ref(path);
+      conn.on('value',s=>{ if(s.val()===true){ r.onDisconnect().remove(); r.set({t:firebase.database.ServerValue.TIMESTAMP}); } });
+      return ()=>{ r.onDisconnect().cancel(); r.remove(); }; },
+    onConnected(cb){ conn.on('value',s=>cb(s.val()===true)); },
+    now:()=>Date.now()+offset,
+    async get(path){ return (await db.ref(path).get()).val(); }
+  };
+}
+
+function makeLocalBackend(){
+  const K='pb16fake:', watchers=new Set();
+  const read=p=>{ try{ const v=localStorage.getItem(K+p); return v==null?null:JSON.parse(v); }catch(e){ return null; } };
+  const STALE=9000;
+  const val=p=>{ const v=read(p); if(v!=null) return v;
+    const pre=K+p+'/', out={}; let any=false;
+    for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(!k.startsWith(pre)) continue;
+      const rest=k.slice(pre.length); if(rest.includes('/')) continue;
+      const x=JSON.parse(localStorage.getItem(k));
+      if(p.endsWith('/on') && x && Date.now()-x.t>STALE) continue; // presence heartbeat expired
+      out[rest]=x; any=true; }
+    return any?out:null; };
+  const fire=p=>{ for(const w of watchers) if(p===w.path||p.startsWith(w.path+'/')||w.path.startsWith(p+'/')) w.emit(); };
+  // other tabs: the storage event fires only once the new value is readable there
+  addEventListener('storage',e=>{ if(e.key===null){ for(const w of watchers) w.emit(); } else if(e.key.startsWith(K)) fire(e.key.slice(K.length)); });
+  const changed=p=>fire(p);
+  const write=(p,v)=>{ try{ if(v==null) localStorage.removeItem(K+p); else localStorage.setItem(K+p,JSON.stringify(v)); }catch(e){ console.warn('local storage full'); } };
+  const removeTree=p=>{ const pre=K+p; for(let i=localStorage.length-1;i>=0;i--){ const k=localStorage.key(i); if(k===pre||k.startsWith(pre+'/')) localStorage.removeItem(k); } };
+  setInterval(()=>{ for(const w of watchers) if(w.path.endsWith('/on')) w.emit(); },3000);
+  return {
+    kind:'local',
+    watch(path,cb){ let last; const w={path,emit(){ const v=val(path), s=JSON.stringify(v); if(s!==last){ last=s; cb(v); } }}; watchers.add(w); setTimeout(()=>w.emit(),0); return ()=>watchers.delete(w); },
+    async set(path,v){ write(path,v); changed(path); },
+    async remove(path){ removeTree(path); changed(path); },
+    async txn(path,fn){ const cur=read(path); if(cur==null) return false; const nv=fn(cur); if(nv===undefined) return false; write(path,nv); changed(path); return true; },
+    presence(path){ const beat=()=>{ write(path,{t:Date.now()}); changed(path); }; beat(); const iv=setInterval(beat,3000);
+      addEventListener('pagehide',()=>{ write(path,null); });
+      return ()=>{ clearInterval(iv); write(path,null); changed(path); }; },
+    onConnected(cb){ cb(true); },
+    now:()=>Date.now(),
+    async get(path){ return val(path); }
+  };
+}
+async function initBackend(local){
+  if(local){ B=makeLocalBackend(); return B; }
+  const cfg=savedConfig(); if(!cfg) throw new Error('noconfig');
+  B=await makeFirebaseBackend(cfg); return B;
+}
+const R=code=>'pb16/rooms/'+code;
+async function txnRoom(code,fn){ // run fn on a parsed copy of the room state; return undefined from fn to abort
+  return B.txn(R(code)+'/st',cur=>{ let st; try{ st=JSON.parse(cur); }catch(e){ return undefined; }
+    const r=fn(st); if(r===undefined) return undefined; r.updated=B.now(); return JSON.stringify(r); });
+}
+function assignIn(st,side,on){ // rotate through this team, skipping anyone offline
+  const list=st.members.filter(m=>m.side===side); if(!list.length) return null;
+  const n=list.length;
+  for(let k=0;k<n;k++){ const i=(st.rot[side]+k)%n; if(on[list[i].id]){ st.rot[side]=i+1; return list[i].id; } }
+  const i=st.rot[side]%n; st.rot[side]=i+1; return list[i].id;
+}
+const withOnline=(st,on)=>{ st.members.forEach(m=>m.online=!!(on&&on[m.id])); return st; };
+
+/* ======================= STUDENT CLIENT ======================= */
+let CODE=null, LOCAL=false, MYID=null, MYNAME='', ST=null, RAW=null, ON={}, PH={}, connected=false, started=false, joinedAt=0, lastNotice=null;
+const me=()=>ST&&ST.members.find(m=>m.id===MYID);
+const mem=id=>ST&&ST.members.find(m=>m.id===id);
+const nm=id=>{const m=mem(id);return m?m.name:'?'};
+const tn=s=>ST.teams[s]?ST.teams[s].name:'…';
+const isDone=qi=>isDoneIn(ST,qi), current=()=>curIn(ST), turnSide=()=>turnIn(ST);
+const canPick=()=>{const m=me(); return !!m && readyIn(ST) && current()==null && ST.opened.length<16 && turnSide()===m.side;};
+
+function setStatus(kind,txt){ $('status').className='status '+kind; $('statusTxt').textContent=txt; }
+function updateStatus(){
+  if(!connected) return setStatus('wait','Connecting… 連線中');
+  if(RAW===null) return setStatus('','Room not found · 找不到這個房間，請確認代碼');
+  setStatus('on','Connected · 已連線');
+}
+async function startClient(){
+  if(started) return; started=true; joinedAt=Date.now();
+  setStatus('wait','Connecting… 連線中');
+  try{ await initBackend(LOCAL); }
+  catch(e){ setStatus('', e.message==='noconfig'?'這個檔案還沒設定連線，請向老師拿「學生版」檔案':'無法連線，請確認網路');
+    $('qcard').innerHTML=`<div class="empty">${e.message==='noconfig'?'This file is not set up yet.<br>請向老師拿「學生版」檔案。':'Cannot connect · 無法連線'}</div>`; return; }
+  B.onConnected(c=>{ connected=c; updateStatus(); });
+  B.presence(R(CODE)+'/on/'+MYID);
+  B.watch(R(CODE)+'/st',v=>{ RAW=v; onState(v?JSON.parse(v):null); updateStatus(); });
+  B.watch(R(CODE)+'/on',v=>{ ON=v||{}; if(ST){ withOnline(ST,ON); if(me()) render(); else showLobby(); } });
+  B.watch(R(CODE)+'/photos',v=>{ PH={}; for(const k in (v||{})){ PH[k.replace('_',':')]=v[k]; } if(ST&&me()) render(); });
+  B.watch(R(CODE)+'/notice',v=>{ if(!v||!v.id) return; if(lastNotice===null&&B.now()-v.t>60000){ lastNotice=v.id; return; } if(v.id!==lastNotice){ lastNotice=v.id; showNotice(v.text); } });
+}
+function onState(st){
+  if(!st){ ST=null; $('qcard').innerHTML='<div class="empty">Room not found.<br>找不到這個房間，請確認代碼是否正確。</div>'; return; }
+  withOnline(st,ON);
+  const prev=ST, pm=prev&&prev.members.find(x=>x.id===MYID);
+  ST=st;
+  if(!me()){ if(pm) toast('Please choose your team again · 請重新選擇隊伍'); showLobby(); return; }
+  $('lobbyModal').classList.add('hidden');
+  if(pm && pm.side===me().side) effects(prev,ST);
+  else if(pm) toast(`Your teacher moved you to ${tn(me().side)} · 老師把你移到 ${tn(me().side)}`,'gold');
+  render(); saveLast();
+}
+
+/* actions become database transactions; the transaction re-checks every rule against the latest state */
+async function act(m){
+  if(!B||!ST) return;
+  let why=null; const fail=w=>{ why=w; return undefined; };
+  let ok=false;
+  if(m.type==='join'){
+    ok=await txnRoom(CODE,st=>{ const x=st.members.find(y=>y.id===MYID);
+      if(x){ x.name=MYNAME; return st; } st.members.push({id:MYID,name:MYNAME,side:m.side==='B'?'B':'A'}); return st; });
+  }
+  else if(m.type==='open'){
+    const on={...ON};
+    ok=await txnRoom(CODE,st=>{ const x=st.members.find(y=>y.id===MYID); if(!x) return fail('');
+      withOnline(st,on);
+      if(!readyIn(st)) return fail('Waiting for both teams · 等待兩隊都有人上線');
+      if(curIn(st)!=null) return fail('Finish the current question first · 先完成目前這題');
+      if(turnIn(st)!==x.side) return fail("It's the other team's turn · 這次輪到對方選");
+      if(st.opened.includes(m.qi)) return fail('');
+      st.opened.push(m.qi); st.openedAt[m.qi]=B.now();
+      st.who[m.qi]={picker:MYID,A:assignIn(st,'A',on),B:assignIn(st,'B',on)};
+      st.got[m.qi]={A:null,B:null};
+      st.members.forEach(y=>delete y.online); return st; });
+  }
+  else if(m.type==='photo'){
+    const side=me().side, qi=m.qi;
+    try{ await B.set(R(CODE)+'/photos/'+qi+'_'+side,m.data); }catch(e){ toast('Upload failed, try again · 上傳失敗，請再試一次'); return; }
+    ok=await txnRoom(CODE,st=>{
+      if(curIn(st)!==qi) return fail('This question is already finished · 這題已經完成');
+      if(st.who[qi][side]!==MYID) return fail('This one is not yours to upload · 這題不是由你上傳');
+      st.got[qi][side]=MYID;
+      for(const s of SIDES) st.teams[s].lines=Math.max(st.teams[s].lines,linesIn(st,s));
+      return st; });
+  }
+  else if(m.type==='takeover'){
+    const on={...ON}, side=me().side;
+    ok=await txnRoom(CODE,st=>{ const qi=curIn(st); if(qi!==m.qi||st.got[qi][side]) return fail('');
+      const cur=st.who[qi][side]; if(cur&&on[cur]&&cur!==MYID) return fail('They are back online · 對方已經回到線上');
+      st.who[qi][side]=MYID; return st; });
+  }
+  if(!ok && why) toast(why);
+  if(!ok && why===null && m.type!=='open') toast('Connection problem, try again · 連線不穩，請再試一次');
+}
+function showNotice(text){
+  let el=$('noticeBox'); if(el) el.remove();
+  el=document.createElement('div'); el.id='noticeBox';
+  el.innerHTML=`<small>📢 FROM YOUR TEACHER · 老師訊息</small>${esc(text)}`;
+  document.body.appendChild(el); chime(true);
+  clearTimeout(showNotice._t); showNotice._t=setTimeout(()=>el.remove(),9000);
+  el.onclick=()=>el.remove();
+}
+function effects(a,b){
+  const my=me().side, ot=other(my);
+  for(const x of b.members) if(x.id!==MYID && !a.members.some(y=>y.id===x.id)) toast(`${x.name} joined ${b.teams[x.side].name} · 加入了`, x.side===my?'':'b');
+  if(b.teams.B && !a.teams.B && my==='A') toast(`${b.teams.B.name} is here! 對方隊伍來了`,'b');
+  const bigA=(a.teams[my]||{}).lines||0, bigB=(a.teams[ot]||{}).lines||0;
+  const myUp=(b.teams[my]||{}).lines||0, otUp=(b.teams[ot]||{}).lines||0;
+  const newlyDone=b.opened.filter(qi=>isDoneIn(b,qi)&&!isDoneIn(a,qi));
+  if(b.opened.length>a.opened.length){
+    const qi=b.opened[b.opened.length-1]; justRevealed=qi; showReveal(qi);
+    if(b.who[qi][my]===MYID){ try{navigator.vibrate&&navigator.vibrate([120,80,120])}catch(e){} chime(true); } else chime(false);
+  }
+  if(myUp>bigA) myBingo(myUp);
+  else if(otUp>bigB) partnerBingo(otUp);
+  else if(newlyDone.length){ pop(); toast('Square complete! ✓ 完成一格','gold'); }
+  if(newlyDone.length && b.opened.length<16){
+    setTimeout(()=>{ if(!ST||current()!=null) return;
+      turnSide()===my ? toast('Your team picks next! 輪到你們翻下一格 👆') : toast(`${tn(ot)} picks next · 換對方選`,'b'); },1100);
+  }
+  const c=curIn(b);
+  if(c!=null && a.who[c] && a.who[c][my]!==MYID && b.who[c][my]===MYID) toast('You upload this one now! 改由你上傳 📸','gold');
+}
+
+/* ======================= ACTIONS ======================= */
+let justRevealed=null, viewQi=null;
+function onCellClick(qi){
+  unlockAudio();
+  if(ST.opened.includes(qi)){ if(isDone(qi)){ viewQi=qi; render(); openLightbox(qi); } return; }
+  if(!ST.teams.B) return toast('Waiting for the other team · 等待另一隊加入');
+  if(!readyIn(ST)) return toast('Waiting for players to come back online · 等待對方上線');
+  if(current()!=null){ toast('Finish the current question first · 先完成目前這題'); flashCell(current()); return; }
+  if(turnSide()!==me().side) return toast(`It's ${tn(turnSide())}'s turn · 這次輪到對方選`,'b');
+  act({type:'open',qi});
+}
+function addPhoto(data){
+  const qi=current(); if(qi==null) return;
+  const side=me().side;
+  if(ST.who[qi][side]!==MYID) return toast(`${nm(ST.who[qi][side])} uploads this one · 這題由 ${nm(ST.who[qi][side])} 上傳`);
+  PH[qi+':'+side]=data; render();
+  act({type:'photo',qi,data});
+}
+function showReveal(qi){
+  const q=ST.questions[qi], my=me().side, ot=other(my), pos=ST.teams[my].order.indexOf(qi), w=ST.who[qi], pk=mem(w.picker)||{side:turnIn({opened:ST.opened.slice(0,-1)}),name:'?'};
+  const el=$('rvWho'); el.textContent=`${tn(pk.side)} · ${pk.name} picked 選了`; el.style.background=pk.side===my?'var(--a)':'var(--b)';
+  $('rvQ').textContent=q.en; $('rvZh').textContent=q.zh||'';
+  $('rvPos').innerHTML=[...Array(16)].map((_,i)=>`<i class="${i===pos?'here':''}"></i>`).join('');
+  $('rvPosTxt').textContent=`On your board: square ${pos+1} · 在你的盤面第 ${pos+1} 格`;
+  $('rvUp').innerHTML=`📸 Uploaders 上傳者<br><b style="color:var(--a)">${esc(tn(my))}: ${esc(nm(w[my]))}</b> &nbsp;·&nbsp; <b style="color:var(--b)">${esc(tn(ot))}: ${esc(nm(w[ot]))}</b>`;
+  $('rvMe').classList.toggle('hidden',w[my]!==MYID);
+  $('revealModal').classList.remove('hidden');
+}
+$('rvOk').onclick=()=>{ $('revealModal').classList.add('hidden'); const c=current(); if(c!=null) flashCell(c); };
+
+/* ======================= RENDER ======================= */
+function teamBlock(side,cls){
+  const t=ST.teams[side];
+  if(!t) return `<div class="team"><span class="dot" style="background:var(--b)"></span>Waiting… <span class="zh" style="font-size:14px;color:var(--muted)">等待另一隊加入</span></div>`;
+  const cur=current(), up=cur!=null?ST.who[cur][side]:null;
+  const chips=ST.members.filter(m=>m.side===side).map(m=>
+    `<span class="chip ${m.online?'on':''} ${m.id===MYID?'you':''} ${m.id===up?'up':''}"><i></i>${m.id===up?'📸 ':''}${esc(m.name)}${m.id===MYID?' (you)':''}</span>`).join('');
+  return `<div class="team"><span class="dot" style="background:var(--${cls==='me'?'a':'b'})"></span>${esc(t.name)}<span class="score ${cls}">${t.lines} line${t.lines===1?'':'s'}</span></div><div class="mem">${chips}</div>`;
+}
+function render(){
+  if(!ST||!me()) return;
+  const my=me().side, ot=other(my), order=ST.teams[my].order;
+  $('tMe').innerHTML=teamBlock(my,'me'); $('tThem').innerHTML=teamBlock(ot,'them');
+  $('hCode').textContent=CODE+(LOCAL?' (local)':'');
+  const cur=current(), pick=canPick();
+  const t=$('turn');
+  if(!ST.teams.B){ t.className='turn'; t.textContent=`⏳ Waiting for the other team · 代碼 ${CODE}`; }
+  else if(ST.opened.length>=16 && cur==null){ t.className='turn'; t.textContent='All done! 全部完成 🎉'; }
+  else if(cur!=null){ const iUp=ST.who[cur][my]===MYID; t.className='turn '+(iUp?'mine':'answer'); t.textContent=iUp?'📸 You upload! 由你上傳':`📸 ${nm(ST.who[cur][my])} uploads · 等上傳`; }
+  else if(!readyIn(ST)){ t.className='turn'; t.textContent='⏳ Waiting for players · 等待上線'; }
+  else if(turnSide()===my){ t.className='turn mine'; t.textContent='👆 Your team picks · 輪到你們選'; }
+  else { t.className='turn theirs'; t.textContent=`⏳ ${tn(ot)} is picking · 等對方選`; }
+  const board=$('board'); board.classList.toggle('pickable',pick);
+  const winPos=new Set(LINES.filter(l=>l.every(p=>isDone(order[p]))).flat());
+  board.innerHTML=order.map((qi,pos)=>{
+    const q=ST.questions[qi], open=ST.opened.includes(qi), done=isDone(qi), g=ST.got[qi]||{};
+    if(!open) return `<button class="cell back ${pick?'':'locked'}" data-qi="${qi}"><span class="bnum">${pos+1}</span><span class="q">?</span></button>`;
+    const cls=['cell',justRevealed===qi?'reveal':'',done?'done':'',cur===qi?'current':'',viewQi===qi&&cur!==qi?'active':'',winPos.has(pos)?'win':''].join(' ');
+    if(done){ const a=PH[qi+':'+my], b=PH[qi+':'+ot];
+      return `<button class="${cls}" data-qi="${qi}"><div class="ph">${a?`<img src="${a}" alt="">`:'<span></span>'}${b?`<img src="${b}" alt="">`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></button>`; }
+    return `<button class="${cls}" data-qi="${qi}"><span class="num">${pos+1}</span><span class="en">${esc(q.en)}</span>${q.zh?`<span class="czh">${esc(q.zh)}</span>`:''}
+      <span class="marks">${g[my]?`<span class="pill me">✓ ${esc(tn(my))}</span>`:''}${g[ot]?`<span class="pill them">✓ ${esc(tn(ot))}</span>`:''}</span></button>`;
+  }).join('');
+  justRevealed=null;
+  drawFrames(order);
+  renderCard();
+}
+function renderCard(){
+  const qc=$('qcard'); qc.classList.remove('mine-up');
+  const my=me().side, ot=other(my);
+  let qi=current(); if(qi==null && viewQi!=null && ST.opened.includes(viewQi)) qi=viewQi;
+  if(qi==null){
+    let msg;
+    if(!ST.teams.B) msg=`⏳ Waiting for the other team to join<br><span class="zh">等待另一隊加入 · 房間代碼 <b>${CODE}</b></span>`;
+    else if(ST.opened.length>=16) msg='🎉 All 16 squares done!<br><span class="zh">16 格全部完成！</span>';
+    else if(!readyIn(ST)) msg='⏳ Waiting for players to come back online<br><span class="zh">等待兩隊都有人上線</span>';
+    else if(turnSide()===my) msg='👆 Your team\'s turn! Anyone on your team can pick a square.<br><span class="zh">輪到你們！隊上任何人都可以翻一格</span>';
+    else msg=`⏳ Waiting for ${esc(tn(ot))} to pick…<br><span class="zh">等對方選一格</span>`;
+    qc.innerHTML=`<div class="empty">${msg}</div>`; return;
+  }
+  const q=ST.questions[qi], w=ST.who[qi], g=ST.got[qi]||{}, done=isDone(qi), iUp=w[my]===MYID;
+  const slot=(side,cls)=>{ const src=(g[side]||cls==='me')?PH[qi+':'+side]:null, up=nm(w[side]);
+    const inner = src ? `<img src="${src}" data-lb="${qi}" alt="">`
+      : g[side] ? '<span class="big">⌛</span><span class="loading">Loading… 載入中</span>'
+      : cls==='me' ? `<span class="big">📷</span>${esc(up)}<br><span class="zh">負責上傳</span>`
+      : `<span class="big">⏳</span>${esc(up)}<br><span class="zh">等對方上傳</span>`;
+    return `<div class="slot ${cls}"><span class="who">${esc(tn(side))} · ${esc(up)}</span>${inner}</div>`; };
+  let foot='';
+  if(!done){
+    if(iUp){
+      qc.classList.add('mine-up');
+      foot=`<div class="upnote me">📸 You upload this one! 這題由你上傳！<small>Answer together with your team, then upload · 和隊友一起回答，再由你上傳</small></div>
+        <div class="upbtns"><button class="btn a" id="camBtn">📸 Camera 拍照</button><button class="btn ghost" id="upBtn">🖼 Upload 上傳</button></div>
+        ${g[my]?'<div class="hint" style="text-align:center">You can replace your photo until both teams are in. 雙方都上傳前可以重拍。</div>':''}`;
+    } else {
+      const upM=mem(w[my]);
+      foot=`<div class="upnote">📸 <b>${esc(nm(w[my]))}</b> uploads this one · 這題由 <b>${esc(nm(w[my]))}</b> 上傳<small>Help answer and get in the photo! 一起回答、一起入鏡！</small></div>
+        ${upM&&!upM.online&&!g[my]?`<div style="text-align:center"><button class="btn sm" id="takeBtn">${esc(upM.name)} is offline — I'll upload · 由我代替上傳</button></div>`:''}`;
+    }
+  }
+  qc.innerHTML=`<div class="lbl">${done?'✓ Complete · 完成':'Question · 題目'}</div>
+    <div class="qen">${esc(q.en)}</div>${q.zh?`<div class="qzh">${esc(q.zh)}</div>`:''}
+    <div class="slots">${slot(my,'me')}${slot(ot,'them')}</div>${foot}`;
+  if($('camBtn')){ $('camBtn').onclick=openCam; $('upBtn').onclick=()=>{$('fileIn').value='';$('fileIn').click();}; }
+  if($('takeBtn')) $('takeBtn').onclick=()=>act({type:'takeover',qi});
+}
+function flashCell(qi){ const el=document.querySelector(`.cell[data-qi="${qi}"]`); if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } }
+
+/* line frames: thick coloured boxes drawn in the gaps between squares */
+const FRAME_COLORS=['#ffb800','#ff3d8b','#14b86e','#8a4dff','#00a8d6','#ff7a1a','#e0245e','#2e9d3a','#5b5bff','#c27a00'];
+let shownLines=new Set();
+function drawFrames(order){
+  const board=$('board'); board.querySelectorAll('.frame').forEach(e=>e.remove());
+  const cells=[...board.querySelectorAll('.cell')]; if(cells.length!==16) return;
+  const O=5;
+  const box=(a,b,color,isNew)=>{ const A=cells[a],B=cells[b],f=document.createElement('div');
+    f.className='frame'+(isNew?' new':''); f.style.setProperty('--fc',color);
+    f.style.left=(A.offsetLeft-O)+'px'; f.style.top=(A.offsetTop-O)+'px';
+    f.style.width=(B.offsetLeft+B.offsetWidth-A.offsetLeft+2*O)+'px'; f.style.height=(B.offsetTop+B.offsetHeight-A.offsetTop+2*O)+'px';
+    board.appendChild(f); };
+  const now=new Set();
+  LINES.forEach((l,i)=>{ if(!l.every(p=>isDone(order[p]))) return; now.add(i); const isNew=!shownLines.has(i);
+    if(i<8) box(l[0],l[3],FRAME_COLORS[i],isNew); else l.forEach(p=>box(p,p,FRAME_COLORS[i],isNew)); });
+  shownLines=now;
+}
+addEventListener('resize',()=>{ if(ST&&me()){ const k=shownLines; drawFrames(ST.teams[me().side].order); shownLines=k; } });
+
+/* ======================= PHOTOS ======================= */
+function compress(src){
+  const max=640, w=src.videoWidth||src.naturalWidth||src.width, h=src.videoHeight||src.naturalHeight||src.height;
+  const k=Math.min(1,max/Math.max(w,h)), c=document.createElement('canvas');
+  c.width=Math.round(w*k); c.height=Math.round(h*k);
+  const x=c.getContext('2d'); if(src.tagName==='VIDEO'){ x.translate(c.width,0); x.scale(-1,1); }
+  x.drawImage(src,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.7);
+}
+$('fileIn').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f), img=new Image();
+  img.onload=()=>{ addPhoto(compress(img)); URL.revokeObjectURL(url); }; img.onerror=()=>toast('無法讀取這張圖片'); img.src=url; };
+let camStream=null;
+async function openCam(){
+  $('camErr').textContent=''; $('camModal').classList.remove('hidden');
+  try{ camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false}); $('camVideo').srcObject=camStream; }
+  catch(e){ $('camErr').innerHTML='Camera unavailable — try “Upload”.<br>無法開啟鏡頭（可能被視訊軟體占用），請改用「上傳」。'; }
+}
+function closeCam(){ $('camModal').classList.add('hidden'); if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }
+$('camCancel').onclick=closeCam;
+$('camSnap').onclick=()=>{ const v=$('camVideo'); if(!v.videoWidth) return; const d=compress(v); closeCam(); shutter(); addPhoto(d); };
+function openLightbox(qi){
+  if(WATCH) return;
+  const q=ST.questions[qi], my=me().side, ot=other(my), w=ST.who[qi]||{};
+  $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
+  const fig=(side,color)=>{ const src=PH[qi+':'+side]; return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:${color}">${esc(tn(side))} · ${esc(nm((ST.got[qi]||{})[side]||w[side]))}</figcaption></figure>`; };
+  $('lbGrid').innerHTML=fig(my,'var(--a)')+fig(ot,'var(--b)');
+  $('lbModal').classList.remove('hidden');
+}
+$('lbClose').onclick=()=>$('lbModal').classList.add('hidden');
+$('lbModal').onclick=e=>{ if(e.target.id==='lbModal') $('lbModal').classList.add('hidden'); };
+$('board').addEventListener('click',e=>{ const c=e.target.closest('.cell'); if(c) onCellClick(+c.dataset.qi); });
+$('qcard').addEventListener('click',e=>{ const im=e.target.closest('img[data-lb]'); if(im) openLightbox(+im.dataset.lb); });
+/* ======================= FX: SOUND ======================= */
+let AC=null;
+function unlockAudio(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){} }
+function tone(f,t,d,type='triangle',v=.22){
+  if(!AC) return; const o=AC.createOscillator(), g=AC.createGain(); o.type=type; o.frequency.value=f;
+  const s=AC.currentTime+t; g.gain.setValueAtTime(0,s); g.gain.linearRampToValueAtTime(v,s+.02); g.gain.exponentialRampToValueAtTime(.001,s+d);
+  o.connect(g).connect(AC.destination); o.start(s); o.stop(s+d+.05);
+}
+function fanfare(){ unlockAudio(); [[523,0],[659,.12],[784,.24],[1047,.36]].forEach(([f,t])=>tone(f,t,.35,'square',.12)); tone(1047,.55,.9,'triangle',.25); tone(1319,.55,.9,'triangle',.15); tone(1568,.55,.9,'sine',.12); }
+function chime(big){ unlockAudio(); tone(880,0,.4,'sine',.18); tone(1175,.14,.6,'sine',.16); if(big){tone(1568,.3,.8,'sine',.14);} }
+function pop(){ unlockAudio(); tone(660,0,.12,'triangle',.25); tone(990,.07,.2,'triangle',.2); }
+function shutter(){ unlockAudio(); if(!AC) return; const b=AC.createBuffer(1,AC.sampleRate*.08,AC.sampleRate), d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length); const s=AC.createBufferSource(), g=AC.createGain(); g.gain.value=.25; s.buffer=b; s.connect(g).connect(AC.destination); s.start(); }
+
+/* ======================= FX: CONFETTI ======================= */
+const fx=$('fx'), fctx=fx.getContext('2d'); let parts=[], fxRunning=false;
+function sizeFx(){ fx.width=innerWidth*devicePixelRatio; fx.height=innerHeight*devicePixelRatio; }
+addEventListener('resize',sizeFx); sizeFx();
+function confetti(n, palette){
+  const W=innerWidth, cols=palette||['#ff6b4a','#3d7bff','#ffc23d','#21b47a','#b45cff','#ff4fa3'];
+  for(let i=0;i<n;i++){
+    const fromLeft=i%2===0;
+    parts.push({x:fromLeft?-10:W+10,y:innerHeight*.75,vx:(fromLeft?1:-1)*(4+Math.random()*9),vy:-(10+Math.random()*12),
+      g:.32,r:Math.random()*6.28,vr:(Math.random()-.5)*.35,w:7+Math.random()*7,h:4+Math.random()*6,c:cols[i%cols.length],life:0});
+  }
+  for(let i=0;i<n/2;i++) parts.push({x:Math.random()*W,y:-20-Math.random()*200,vx:(Math.random()-.5)*2,vy:2+Math.random()*3,g:.06,r:Math.random()*6,vr:(Math.random()-.5)*.3,w:7+Math.random()*6,h:4+Math.random()*5,c:cols[i%cols.length],life:0});
+  if(!fxRunning){ fxRunning=true; requestAnimationFrame(tick); }
+}
+function tick(){
+  const dpr=devicePixelRatio; fctx.setTransform(dpr,0,0,dpr,0,0); fctx.clearRect(0,0,innerWidth,innerHeight);
+  parts=parts.filter(p=>p.y<innerHeight+40&&p.life<420);
+  for(const p of parts){ p.vy+=p.g; p.vx*=.99; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.life++;
+    fctx.save(); fctx.translate(p.x,p.y); fctx.rotate(p.r); fctx.fillStyle=p.c; fctx.fillRect(-p.w/2,-p.h/2,p.w,p.h*Math.abs(Math.cos(p.r*1.7))+1); fctx.restore(); }
+  if(parts.length) requestAnimationFrame(tick); else { fxRunning=false; fctx.clearRect(0,0,innerWidth,innerHeight); }
+}
+function banner(title, sub, cls){
+  const b=$('bingo'); b.className=cls||''; b.innerHTML=`<div class="t">${esc(title)}</div><div class="s">${esc(sub)}</div>`;
+  b.classList.remove('hidden'); clearTimeout(banner._t); banner._t=setTimeout(()=>b.classList.add('hidden'),2700);
+}
+function toast(msg,kind){ const t=document.createElement('div'); t.className='toast '+(kind||''); t.textContent=msg; $('toasts').appendChild(t); setTimeout(()=>t.remove(),3000); }
+
+
+/* =====================================================================
+   TEACHER CONSOLE — a viewer/controller only. The game lives in the
+   cloud database, so closing this page never stops any room.
+   ===================================================================== */
+const OBJ=new Map(); // dashboard photos as cached blob URLs
+function toObjURL(d){ const i=d.indexOf(','), h=d.slice(0,i); if(!h.endsWith(';base64')) return d;
+  const bin=atob(d.slice(i+1)), u8=new Uint8Array(bin.length); for(let k=0;k<bin.length;k++) u8[k]=bin.charCodeAt(k);
+  return URL.createObjectURL(new Blob([u8],{type:h.slice(5,-7)||'image/jpeg'})); }
+function purl(r,key){ const d=r.photos[key]; if(!d) return null; const ck=r.code+'|'+key; const e=OBJ.get(ck);
+  if(e&&e.d===d) return e.u; if(e&&e.u.startsWith('blob:')) URL.revokeObjectURL(e.u); const u=toObjURL(d); OBJ.set(ck,{d,u}); return u; }
+
+let EV=null, EVKEY=null, T_LOCAL=false, T_CONNECTED=false;
+const ROOMS={};   // code -> {code, st, on, photos, unsub:[]}
+let tTab='setup', openRoomCode=null;
+const evPath=()=>'pb16/events/'+EVKEY;
+const evCodes=()=>Object.entries((EV&&EV.codes)||{}).sort((a,b)=>a[1]-b[1]).map(x=>x[0]);
+const rMember=(r,id)=>r.st&&r.st.members.find(x=>x.id===id);
+const txnEvent=fn=>B.txn(evPath(),ev=>{ ev.codes=ev.codes||{}; const r=fn(ev); return r; });
+
+function newRoomState(code,label,a,b){
+  const oa=shuffle16(); let ob; do{ ob=shuffle16(); }while(ob.join()===oa.join());
+  return {code,label,questions:clone(EV.questions),teams:{A:{name:a,order:oa,lines:0},B:{name:b,order:ob,lines:0}},
+    members:[],opened:[],who:{},got:{},rot:{A:0,B:0},openedAt:{},created:B.now(),updated:B.now()};
+}
+function subscribeRoom(code){
+  if(ROOMS[code]) return;
+  const r={code,st:null,on:{},photos:{},unsub:[]}; ROOMS[code]=r;
+  r.unsub.push(B.watch(R(code)+'/st',v=>{ r.st=v?withOnline(JSON.parse(v),r.on):null; dashDirty(); }));
+  r.unsub.push(B.watch(R(code)+'/on',v=>{ r.on=v||{}; if(r.st) withOnline(r.st,r.on); dashDirty(); }));
+  r.unsub.push(B.watch(R(code)+'/photos',v=>{ r.photos={}; for(const k in (v||{})) r.photos[k.replace('_',':')]=v[k]; dashDirty(); }));
+}
+function syncRooms(){
+  const want=new Set(evCodes());
+  for(const c of want) subscribeRoom(c);
+  for(const c in ROOMS) if(!want.has(c)){ ROOMS[c].unsub.forEach(u=>u()); delete ROOMS[c]; }
+}
+
+async function openTeacher(){
+  $('setup').classList.add('hidden'); $('game').classList.add('hidden'); $('teacher').classList.remove('hidden');
+  document.title='Photo Bingo 16 · Teacher';
+  T_LOCAL=!!store.get('pb16t:local'); $('tLocal').checked=T_LOCAL;
+  const cfg=savedConfig(); if(cfg) $('cfgTxt').value=JSON.stringify(cfg,null,2);
+  renderConn();
+  if(!T_LOCAL && !cfg){ setTab('setup'); tStatus('','Not connected · 尚未設定 Firebase'); lockSetup(true); return; }
+  try{ await initBackend(T_LOCAL); }catch(e){ tStatus('','無法連線到 Firebase，請檢查設定或網路'); lockSetup(true); return; }
+  lockSetup(false);
+  B.onConnected(c=>{ T_CONNECTED=c; updateHeader(); });
+  EVKEY=store.get('pb16t:key'+(T_LOCAL?'L':''));
+  if(EVKEY && !(await B.get('pb16/events/'+EVKEY))) EVKEY=null;
+  if(!EVKEY){ EVKEY=randCode()+randCode().slice(0,1); await B.set('pb16/events/'+EVKEY,{questions:defaultQuestions(),codes:{},created:B.now()}); store.set('pb16t:key'+(T_LOCAL?'L':''),EVKEY); }
+  B.watch(evPath(),v=>{ if(!v) return; EV=v; EV.codes=EV.codes||{}; syncRooms(); renderSetup(); dashDirty(); });
+  const firstEv=await B.get(evPath());
+  if(firstEv && Object.keys(firstEv.codes||{}).length) setTab('live'); else setTab('setup');
+}
+function lockSetup(on){ ['pQ','pRooms','pShare','pEvent'].forEach(id=>$(id).style.opacity=on?.45:1); ['pQ','pRooms','pShare','pEvent'].forEach(id=>$(id).style.pointerEvents=on?'none':''); }
+function renderConn(){
+  const cfg=savedConfig();
+  $('connState').innerHTML=T_LOCAL?'🧪 本機測試模式：只能在這台電腦的分頁之間測試'
+    : cfg?`✅ Firebase: <b>${esc(cfg.projectId||cfg.databaseURL)}</b>`:'⚠️ 還沒設定 Firebase。請照下面步驟建立免費專案，再把設定貼上。';
+  $('cfgBox').classList.toggle('hidden',T_LOCAL);
+}
+$('cfgSave').onclick=()=>{ const cfg=parseFirebaseConfig($('cfgTxt').value);
+  if(!cfg){ $('cfgErr').textContent='讀不到設定。請貼上整段 firebaseConfig（要包含 apiKey 和 databaseURL）。'; return; }
+  store.set('pb16:fbcfg',cfg); location.reload(); };
+$('tLocal').onchange=e=>{ store.set('pb16t:local',e.target.checked); location.reload(); };
+function tStatus(kind,txt){ $('tStatus').className='status '+kind; $('tStatusTxt').textContent=txt; }
+function setTab(t){ tTab=t; document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===t));
+  $('tSetup').classList.toggle('hidden',t!=='setup'); $('tLive').classList.toggle('hidden',t!=='live'); t==='live'?renderLive():renderSetup(); }
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+
+/* ---------- setup tab ---------- */
+function renderSetup(){
+  if(!EV) return;
+  $('qPrev').innerHTML=EV.questions.map(q=>`<li>${esc(q.en)}${q.zh?` <span class="zh">${esc(q.zh)}</span>`:''}</li>`).join('');
+  const codes=evCodes();
+  const rows=codes.map(c=>ROOMS[c]).filter(r=>r&&r.st).map(r=>{ const st=r.st, n=st.members.length;
+    return `<tr data-code="${r.code}"><td><input data-f="label" value="${esc(st.label)}" maxlength="30"></td>
+      <td><input data-f="A" value="${esc(st.teams.A.name)}" maxlength="24"></td><td><input data-f="B" value="${esc(st.teams.B.name)}" maxlength="24"></td>
+      <td><span class="cd">${r.code}</span></td><td style="font-size:13px;color:var(--muted);white-space:nowrap">${st.opened.length?`${st.opened.length}/16 翻開`:n?`${n} 人`:'—'}</td>
+      <td><button class="x" data-del="${r.code}" title="Delete">✕</button></td></tr>`; }).join('');
+  const active=document.activeElement&&$('roomTable').contains(document.activeElement);
+  if(!active) $('roomTable').innerHTML=codes.length?`<tr><th>Room 房間</th><th>Team 1 第一隊（先選）</th><th>Team 2 第二隊</th><th>Code 代碼</th><th></th><th></th></tr>${rows}`:'<tr><td class="hint" style="border:none">還沒有房間，請在上方設定隊名和數量，按「新增」。</td></tr>';
+  $('shareTxt').value=shareText();
+  $('evKey').textContent=EVKEY||'—';
+}
+function shareText(){
+  const rs=evCodes().map(c=>ROOMS[c]).filter(r=>r&&r.st); if(!rs.length) return '';
+  return `📸 Photo Bingo 16\n打開老師給的檔案，輸入你的名字和房間代碼。\nOpen the file from your teacher, type your name and your room code.\n\n`+
+    rs.map(r=>`${r.st.label}（${r.st.teams.A.name} vs ${r.st.teams.B.name}）：${r.code}`).join('\n');
+}
+$('addRooms').onclick=async()=>{
+  const a=$('defA').value.trim()||'Team 1', b=$('defB').value.trim()||'Team 2', n=Math.max(1,Math.min(20,+$('defN').value||1));
+  $('addRooms').disabled=true;
+  try{
+    let k=evCodes().length; const made=[];
+    for(let i=0;i<n;i++){ let code; do{ code=randCode(); }while(ROOMS[code]||made.includes(code)||(await B.get(R(code)+'/st')));
+      await B.set(R(code)+'/st',JSON.stringify(newRoomState(code,`Room ${++k}`,a,b))); made.push([code,k]); }
+    await txnEvent(ev=>{ made.forEach(([c,o])=>ev.codes[c]=o); return ev; });
+    toast(`Added ${n} room${n>1?'s':''} · 已新增 ${n} 間`,'gold');
+  }catch(e){ toast('新增失敗，請檢查連線'); console.warn(e); }
+  $('addRooms').disabled=false;
+};
+$('roomTable').addEventListener('change',e=>{
+  const inp=e.target.closest('input[data-f]'); if(!inp) return; const code=inp.closest('tr').dataset.code, v=inp.value.trim(), f=inp.dataset.f;
+  if(!v) return; txnRoom(code,st=>{ if(f==='label') st.label=v; else st.teams[f].name=v; return st; }).then(()=>{ inp.blur(); });
+});
+$('roomTable').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-del]'); if(!b) return; const r=ROOMS[b.dataset.del]; if(!r||!r.st) return;
+  if(!confirm(`刪除 ${r.st.label}（${r.code}）？${r.st.members.length?'這個房間已經有學生，進度和照片都會刪除。':''}`)) return;
+  await txnEvent(ev=>{ delete ev.codes[r.code]; return ev; }); await B.remove(R(r.code));
+});
+$('copyList').onclick=async()=>{ const t=shareText(); if(!t) return toast('還沒有房間');
+  try{ await navigator.clipboard.writeText(t); }catch(e){ const x=$('shareTxt'); x.select(); document.execCommand('copy'); }
+  toast('Copied! 已複製，可以貼到 LINE / Email','gold'); };
+$('dlStudent').onclick=()=>{
+  const cfg=savedConfig(); if(T_LOCAL||!cfg) return toast('本機測試模式不能下載學生版，請先設定 Firebase');
+  const html=SRC0.replace(/const EMBED_CFG=[^\n]*;/,'const EMBED_CFG='+JSON.stringify(cfg)+';');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([html],{type:'text/html'})); a.download='photo-bingo-16-student.html';
+  document.body.appendChild(a); a.click(); a.remove(); toast('已下載 photo-bingo-16-student.html','gold');
+};
+$('tEditQ').onclick=()=>openQEditor(EV.questions, async q=>{
+  await txnEvent(ev=>{ ev.questions=q; return ev; }); let n=0;
+  for(const c of evCodes()){ const r=ROOMS[c]; if(r&&r.st&&!r.st.opened.length){ n++; await txnRoom(c,st=>{ if(st.opened.length) return; st.questions=clone(q); return st; }); } }
+  toast(`題目已更新（${n} 間房間）`,'gold'); });
+$('openEv').onclick=async()=>{ const k=$('evKeyIn').value.trim().toUpperCase(); if(k.length!==6) return toast('活動代碼是 6 個字元');
+  if(!(await B.get('pb16/events/'+k))) return toast('找不到這個活動代碼');
+  store.set('pb16t:key'+(T_LOCAL?'L':''),k); location.reload(); };
+$('tWipe').onclick=async()=>{ if(!confirm('刪除這個活動的所有房間、進度和照片？這個動作無法復原。')) return;
+  for(const c of evCodes()) await B.remove(R(c)); await B.remove(evPath()); store.del('pb16t:key'+(T_LOCAL?'L':'')); location.reload(); };
+$('tLock').onclick=()=>{ sstore.del('pb16t:ok'); store.del('pb16t:ok'); location.hash=''; location.reload(); };
+$('tExit').onclick=e=>{ e.preventDefault(); location.hash=''; location.reload(); };
+
+/* ---------- live tab ---------- */
+let dashT=null, dashLate=false;
+function dashDirty(){ if(dashT) return; dashT=setTimeout(()=>{ dashT=null; updateHeader();
+  if(document.hidden){ dashLate=true; return; } if(tTab==='live') renderLive(); else renderSetup(); if(openRoomCode) renderRoomModal(); },250); }
+document.addEventListener('visibilitychange',()=>{ if(!document.hidden&&dashLate&&EV){ dashLate=false; dashDirty(); } });
+setInterval(()=>{ if(EV && tTab==='live') dashDirty(); },5000);
+function updateHeader(){
+  if(!B) return;
+  const rs=Object.values(ROOMS).filter(r=>r.st), on=rs.reduce((a,r)=>a+r.st.members.filter(m=>m.online).length,0);
+  if(!T_CONNECTED) tStatus('wait','Reconnecting… 重新連線中（遊戲不受影響）');
+  else tStatus('on',`${rs.length} rooms · ${on} students online${T_LOCAL?' (local)':''}`);
+}
+const fmtT=ms=>{ const s=Math.max(0,Math.floor(ms/1000)); return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; };
+function roomInfo(r){
+  const st=r.st, now=B.now(), cur=curIn(st), issues=[];
+  const finished=st.opened.length>=16&&cur==null;
+  const onl=s=>st.members.filter(m=>m.side===s&&m.online).length;
+  const status=finished?'done':readyIn(st)?'play':'wait';
+  if(!finished && st.members.length)
+    for(const s of SIDES) if(!onl(s)) issues.push({lvl:st.opened.length?'bad':'warn',t:`👥 No one from ${st.teams[s].name} online · ${st.teams[s].name} 沒有人在線上`});
+  if(cur!=null){
+    for(const s of SIDES){ if(st.got[cur][s]) continue; const u=rMember(r,st.who[cur][s]);
+      if(!u) issues.push({lvl:'bad',t:`📵 ${st.teams[s].name} has no uploader · 沒有上傳者`});
+      else if(!u.online) issues.push({lvl:'bad',t:`📵 ${u.name} (uploader) is offline · 上傳者離線`}); }
+    const el=now-(st.openedAt[cur]||now); if(el>180000) issues.push({lvl:'warn',t:`⏱ ${Math.floor(el/60000)} min on this question · 這題已超過 3 分鐘`});
+  } else if(status==='play' && st.opened.length && now-st.updated>180000) issues.push({lvl:'warn',t:`💤 No pick for ${Math.floor((now-st.updated)/60000)} min · 很久沒有翻牌`});
+  const lvl=issues.some(i=>i.lvl==='bad')?'bad':issues.length?'warn':'';
+  return {cur,finished,status,issues,lvl,done:st.opened.filter(q=>isDoneIn(st,q)).length};
+}
+function chipsFor(st,side,cur){
+  const up=cur!=null?st.who[cur][side]:null;
+  return st.members.filter(m=>m.side===side).map(m=>`<span class="chip ${m.online?'on':''} ${m.id===up&&!st.got[cur][side]?'up':''}"><i></i>${m.id===up?'📸 ':''}${esc(m.name)}</span>`).join('')||'<span class="chip">—</span>';
+}
+function nowText(r,info){
+  const st=r.st, cur=info.cur, nmr=id=>(rMember(r,id)||{}).name||'?';
+  if(info.finished) return '🎉 Finished all 16 · 全部完成';
+  if(cur!=null){ const q=st.questions[cur];
+    return `<b>${esc(q.en)}</b><br>📸 ${SIDES.map(s=>`${esc(st.teams[s].name)}: ${esc(nmr(st.who[cur][s]))} ${st.got[cur][s]?'✓':'⏳'}`).join(' · ')} · ⏱ ${fmtT(B.now()-(st.openedAt[cur]||B.now()))}`; }
+  if(info.status==='play') return `👆 ${esc(st.teams[turnIn(st)].name)} is picking · 選題中`;
+  return `⏳ Waiting for students · 等待學生加入（${SIDES.map(s=>`${esc(st.teams[s].name)} ${st.members.filter(m=>m.side===s&&m.online).length}`).join(' / ')}）`;
+}
+function renderLive(){
+  if(!EV) return;
+  const rs=evCodes().map(c=>ROOMS[c]).filter(r=>r&&r.st), infos=rs.map(roomInfo);
+  const on=rs.reduce((a,r)=>a+r.st.members.filter(m=>m.online).length,0);
+  $('tSummary').innerHTML=`<div class="stat"><b>${rs.length}</b>rooms 房間</div><div class="stat"><b>${on}</b>online 在線學生</div>
+    <div class="stat"><b>${infos.filter(i=>i.status==='play').length}</b>playing 進行中</div><div class="stat"><b>${infos.filter(i=>i.finished).length}</b>finished 完成</div>
+    <div class="stat" style="${infos.some(i=>i.lvl)?'color:#c62f33':''}"><b>${infos.filter(i=>i.lvl).length}</b>need help 需要注意</div>`;
+  if(!rs.length){ $('roomGrid').innerHTML='<div class="empty" style="grid-column:1/-1">還沒有房間，請到「Setup 設定」新增。</div>'; return; }
+  $('roomGrid').innerHTML=rs.map((r,i)=>{ const st=r.st, info=infos[i];
+    const pill={done:['done','Finished 完成'],play:['play','Playing 進行中'],wait:['wait','Waiting 等待中']}[info.status];
+    const thumbs=st.opened.filter(q=>isDoneIn(st,q)).slice(-3).reverse().flatMap(q=>SIDES.map(s=>purl(r,q+':'+s))).filter(Boolean).slice(0,6);
+    return `<div class="rcard ${info.lvl}" data-code="${r.code}">
+      <div class="rc-top"><span class="lbl2">${esc(st.label)}</span><span class="cd">${r.code}</span><span class="spill ${pill[0]}">${pill[1]}</span></div>
+      <div class="row" style="gap:6px"><button class="btn ghost sm" data-watch="${r.code}">👀 Watch 觀看</button><span class="hint" style="margin:0;align-self:center">點卡片看詳細・管理</span></div>
+      ${SIDES.map(s=>`<div class="rc-team"><span class="dot" style="background:var(--${s==='A'?'a':'b'})"></span><span class="tnm">${esc(st.teams[s].name)}</span>
+        <span class="ln" style="background:var(--${s==='A'?'a':'b'}-soft)">${st.teams[s].lines} line${st.teams[s].lines===1?'':'s'}</span>${chipsFor(st,s,info.cur)}</div>`).join('')}
+      <div><div class="prog"><i style="width:${info.done/16*100}%"></i></div><div class="hint" style="margin-top:4px">${info.done}/16 squares done · 完成 ${info.done} 格</div></div>
+      <div class="rc-now">${nowText(r,info)}${info.issues.map(x=>`<br><span class="${x.lvl==='bad'?'alert':'amber'}">${esc(x.t)}</span>`).join('')}</div>
+      ${thumbs.length?`<div class="rc-thumbs">${thumbs.map(t=>`<img src="${t}" alt="">`).join('')}</div>`:''}
+    </div>`; }).join('');
+}
+$('roomGrid').addEventListener('click',e=>{ const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
+async function sendNotice(codes,text){ text=text.trim(); if(!text||!codes.length) return;
+  await Promise.all(codes.map(c=>B.set(R(c)+'/notice',{id:newId(),text,t:B.now()})));
+  toast(`📢 Sent to ${codes.length} room${codes.length>1?'s':''} · 已送出`,'gold'); }
+$('sendAll').onclick=()=>{ sendNotice(evCodes(),$('noticeAll').value); $('noticeAll').value=''; };
+$('noticeAll').addEventListener('keydown',e=>{ if(e.key==='Enter') $('sendAll').click(); });
+
+/* ---------- room detail ---------- */
+function renderRoomModal(){
+  const r=ROOMS[openRoomCode]; if(!r||!r.st){ closeRoomModal(); return; }
+  const st=r.st, info=roomInfo(r), cur=info.cur;
+  $('rmTitle').innerHTML=`${esc(st.label)} <span class="code" style="font-size:15px">${r.code}</span> <button class="btn a sm" onclick="window.open(watchURL('${r.code}'),'_blank')">👀 Watch this room 觀看模式</button>`;
+  if($('rmBody').contains(document.activeElement) && document.activeElement.tagName==='SELECT') return; // don't yank a menu the teacher is using
+  const reassign=cur==null?'':`<div class="row" style="margin-top:10px;align-items:center">${SIDES.map(s=>{
+      const opts=st.members.filter(m=>m.side===s).map(m=>`<option value="${m.id}" ${st.who[cur][s]===m.id?'selected':''}>${esc(m.name)}${m.online?'':' (offline)'}</option>`).join('');
+      return `<label style="font-size:14px">📸 ${esc(st.teams[s].name)} uploader 上傳者：<select data-reassign="${s}" ${st.got[cur][s]?'disabled':''}>${opts}</select></label>`; }).join('<span style="width:14px"></span>')}</div>`;
+  const players=st.members.length?`<table class="mtable">${st.members.map(m=>`<tr>
+      <td><span class="chip ${m.online?'on':''}"><i></i>${esc(m.name)}</span></td>
+      <td><span style="color:var(--${m.side==='A'?'a':'b'});font-weight:600">${esc(st.teams[m.side].name)}</span></td>
+      <td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="${m.id}">⇄ Move to ${esc(st.teams[other(m.side)].name)}</button>
+      <button class="btn ghost sm" data-remove="${m.id}">✕ Remove</button></td></tr>`).join('')}</table>`:'<div class="hint">No students yet · 還沒有學生加入</div>';
+  const board=s=>{ const o=st.teams[s].order, ot=other(s);
+    const win=new Set(LINES.filter(l=>l.every(p=>isDoneIn(st,o[p]))).flat());
+    return o.map((qi,pos)=>{ const q=st.questions[qi];
+      if(!st.opened.includes(qi)) return `<div>${pos+1}</div>`;
+      if(!isDoneIn(st,qi)) return `<div class="op ${win.has(pos)?'wn':''}">${esc(q.en)}</div>`;
+      const a=purl(r,qi+':'+s), b=purl(r,qi+':'+ot);
+      return `<div class="dn ${win.has(pos)?'wn':''}">${a?`<img src="${a}" data-lbq="${qi}">`:''}${b?`<img src="${b}" data-lbq="${qi}">`:''}</div>`; }).join(''); };
+  $('rmBody').innerHTML=`
+    <div class="sec-t">Now 目前狀況</div>
+    <div class="rc-now">${nowText(r,info)}${info.issues.map(x=>`<br><span class="${x.lvl==='bad'?'alert':'amber'}">${esc(x.t)}</span>`).join('')}</div>
+    ${reassign}
+    <div class="sec-t">Students 學生</div>${players}
+    <div class="dm-grid" style="margin-top:6px">${SIDES.map(s=>`<div><div class="sec-t" style="color:var(--${s==='A'?'a':'b'})">${esc(st.teams[s].name)}'s board 盤面 · ${st.teams[s].lines} line${st.teams[s].lines===1?'':'s'}</div><div class="mini">${board(s)}</div></div>`).join('')}</div>
+    <div class="row" style="margin-top:18px"><button class="btn ghost sm" data-reset="1">↺ Reset this room 重來（清除進度與照片）</button></div>`;
+}
+function closeRoomModal(){ openRoomCode=null; $('roomModal').classList.add('hidden'); }
+$('rmClose').onclick=closeRoomModal;
+$('roomModal').addEventListener('click',e=>{ if(e.target.id==='roomModal') closeRoomModal(); });
+$('rmSend').onclick=()=>{ if(openRoomCode){ sendNotice([openRoomCode],$('rmNotice').value); $('rmNotice').value=''; } };
+$('rmNotice').addEventListener('keydown',e=>{ if(e.key==='Enter') $('rmSend').click(); });
+function fixAssign(st,side,id,on){ const cur=curIn(st); if(cur!=null && st.who[cur][side]===id && !st.got[cur][side]) st.who[cur][side]=assignIn(st,side,on); }
+$('rmBody').addEventListener('change',async e=>{
+  const s=e.target.closest('select[data-reassign]'); const code=openRoomCode; if(!s||!code) return;
+  const side=s.dataset.reassign, id=s.value; s.blur();
+  const ok=await txnRoom(code,st=>{ const cur=curIn(st); if(cur==null||st.got[cur][side]) return; st.who[cur][side]=id; return st; });
+  toast(ok?'Uploader changed · 已更換上傳者':'沒有更換（這題可能已經完成）', ok?'gold':'');
+});
+$('rmBody').addEventListener('click',async e=>{
+  const code=openRoomCode, r=ROOMS[code]; if(!r||!r.st) return; const on={...r.on};
+  const mv=e.target.closest('[data-move]'), rm=e.target.closest('[data-remove]'), rs=e.target.closest('[data-reset]'), im=e.target.closest('img[data-lbq]');
+  if(mv){ const id=mv.dataset.move;
+    await txnRoom(code,st=>{ const m=st.members.find(x=>x.id===id); if(!m) return; const old=m.side; m.side=other(old); fixAssign(st,old,id,on); return st; }); }
+  else if(rm){ const m=rMember(r,rm.dataset.remove); if(!m||!confirm(`把 ${m.name} 移出這個房間？（他可以重新加入）`)) return;
+    await txnRoom(code,st=>{ const x=st.members.find(y=>y.id===m.id); if(!x) return; st.members=st.members.filter(y=>y.id!==m.id); fixAssign(st,x.side,m.id,on); return st; }); }
+  else if(rs){ if(!confirm(`重來 ${r.st.label}？所有翻開的格子、連線和照片都會清除（學生保留）。`)) return;
+    await txnRoom(code,st=>{ st.opened=[]; st.who={}; st.got={}; st.rot={A:0,B:0}; st.openedAt={}; SIDES.forEach(s=>st.teams[s].lines=0); st.questions=clone(EV.questions); return st; });
+    await B.remove(R(code)+'/photos'); }
+  else if(im){ const qi=+im.dataset.lbq, st=r.st, q=st.questions[qi];
+    $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
+    $('lbGrid').innerHTML=SIDES.map(s=>{ const src=purl(r,qi+':'+s), who=(rMember(r,st.got[qi][s])||{}).name||'';
+      return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(st.teams[s].name)}${who?' · '+esc(who):''}</figcaption></figure>`; }).join('');
+    $('lbModal').classList.remove('hidden'); }
+});
+
+/* =====================================================================
+   WATCH MODE — a read-only view of one room showing both teams' boards.
+   Opened from the teacher console in a new tab (#watch=CODE). Never
+   joins the room, never counts as a player, writes nothing.
+   ===================================================================== */
+let WATCH=false, wShown={A:new Set(),B:new Set()}, wReveal=null, wRevealT=null;
+async function startWatch(code,local){
+  WATCH=true; CODE=code; LOCAL=local; MYID=null;
+  document.title=`Photo Bingo 16 · Watching ${code}`;
+  $('setup').classList.add('hidden'); $('teacher').classList.add('hidden'); $('game').classList.remove('hidden');
+  $('game').classList.add('watch');
+  $('exitBtn').textContent='Close ✕'; $('exitBtn').onclick=()=>{ window.close(); setTimeout(()=>{ location.hash=''; location.reload(); },200); };
+  const fs=document.createElement('button'); fs.className='btn ghost sm'; fs.textContent='⛶ Full screen 全螢幕';
+  fs.onclick=()=>{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen().catch(()=>{}); };
+  $('exitBtn').before(fs);
+  $('board').outerHTML=`<div class="wboards"><div class="wcol"><div class="wtitle" id="wtA"></div><div class="wboard" id="wbA"></div></div><div class="wcol"><div class="wtitle" id="wtB"></div><div class="wboard" id="wbB"></div></div></div>`;
+  $('hCode').textContent=code;
+  const ov=document.createElement('div'); ov.id='wStart';
+  ov.innerHTML=`<div class="modal-box" style="max-width:460px;text-align:center"><div style="font-size:40px">👀</div><h2 style="margin:6px 0">Watch mode 觀看模式</h2>
+    <p class="hint" style="font-size:15px">只看不玩，不會被算成玩家。點一下開始（才能播放音效）。</p><button class="btn a" id="wGo">Start watching 開始觀看</button></div>`;
+  ov.className='modal'; document.body.appendChild(ov);
+  $('wGo').onclick=()=>{ unlockAudio(); ov.remove(); };
+  setStatus('wait','Connecting… 連線中');
+  try{ await initBackend(local); }catch(e){ setStatus('','無法連線'); return; }
+  B.onConnected(c=>{ connected=c; setStatus(c?'on':'wait', c?'👀 Watching · 觀看中':'Reconnecting… 重新連線中'); });
+  B.watch(R(code)+'/st',v=>{ if(!v){ $('qcard').innerHTML='<div class="empty">Room not found · 找不到房間</div>'; return; }
+    const st=withOnline(JSON.parse(v),ON), prev=ST; ST=st; if(prev) watchEffects(prev,st); renderWatch(); });
+  B.watch(R(code)+'/on',v=>{ ON=v||{}; if(ST){ withOnline(ST,ON); renderWatch(); } });
+  B.watch(R(code)+'/photos',v=>{ PH={}; for(const k in (v||{})) PH[k.replace('_',':')]=v[k]; if(ST) renderWatch(); });
+}
+function watchEffects(a,b){
+  const newly=b.opened.filter(qi=>isDoneIn(b,qi)&&!isDoneIn(a,qi));
+  if(b.opened.length>a.opened.length){ const qi=b.opened[b.opened.length-1]; wReveal=qi; showWatchReveal(qi); chime(false); }
+  let big=false;
+  for(const s of SIDES){ const n=b.teams[s].lines, o=a.teams[s].lines;
+    if(n>o){ big=true; fanfare(); confetti(140, s==='A'?null:['#3d7bff','#7aa7ff','#ffc23d','#ffffff']); setTimeout(()=>confetti(80),500);
+      banner(`${b.teams[s].name} BINGO!`, n===1?'1st line! 第一條線！':`${n} lines! 第 ${n} 條線！`, s==='B'?'them':''); } }
+  if(!big && newly.length){ pop(); toast('Square complete! ✓ 完成一格','gold'); }
+}
+function showWatchReveal(qi){
+  const q=ST.questions[qi], w=ST.who[qi], pk=mem(w.picker);
+  const el=$('rvWho'); el.textContent=pk?`${tn(pk.side)} · ${pk.name} picked 選了`:'New question 新題目'; el.style.background=pk&&pk.side==='B'?'var(--b)':'var(--a)';
+  $('rvQ').textContent=q.en; $('rvZh').textContent=q.zh||'';
+  const grid=s=>{ const pos=ST.teams[s].order.indexOf(qi);
+    return `<div style="text-align:center"><div class="rv-pos" style="margin-top:8px">${[...Array(16)].map((_,i)=>`<i class="${i===pos?'here':''}" style="${i===pos&&s==='B'?'background:var(--b)':''}"></i>`).join('')}</div>
+      <div class="rv-postxt"><b style="color:var(--${s==='A'?'a':'b'})">${esc(tn(s))}</b>: square ${pos+1} · 第 ${pos+1} 格</div></div>`; };
+  $('rvPos').outerHTML=`<div id="rvPos" style="display:flex;gap:28px;justify-content:center;flex-wrap:wrap">${grid('A')}${grid('B')}</div>`;
+  $('rvPosTxt').textContent='';
+  $('rvUp').innerHTML=`📸 Uploaders 上傳者<br><b style="color:var(--a)">${esc(tn('A'))}: ${esc(nm(w.A))}</b> &nbsp;·&nbsp; <b style="color:var(--b)">${esc(tn('B'))}: ${esc(nm(w.B))}</b>`;
+  $('rvMe').classList.add('hidden'); $('rvOk').textContent='OK';
+  $('revealModal').classList.remove('hidden');
+  clearTimeout(wRevealT); wRevealT=setTimeout(()=>$('revealModal').classList.add('hidden'),6000);
+}
+function renderWatch(){
+  if(!ST) return;
+  $('tMe').innerHTML=teamBlock('A','me'); $('tThem').innerHTML=teamBlock('B','them');
+  const cur=current(), t=$('turn');
+  if(ST.opened.length>=16&&cur==null){ t.className='turn'; t.textContent='All done! 全部完成 🎉'; }
+  else if(cur!=null){ t.className='turn answer'; t.textContent='📸 Both teams answering · 兩隊回答中'; }
+  else if(!readyIn(ST)){ t.className='turn'; t.textContent='⏳ Waiting for players · 等待學生'; }
+  else { t.className='turn theirs'; t.textContent=`👆 ${tn(turnSide())} is picking · 選題中`; }
+  for(const s of SIDES){
+    const o=ST.teams[s].order, ot=other(s), el=$('wb'+s);
+    const win=new Set(LINES.filter(l=>l.every(p=>isDone(o[p]))).flat());
+    $('wt'+s).innerHTML=`<span class="dot" style="background:var(--${s==='A'?'a':'b'})"></span>${esc(tn(s))}'s board <span class="zh">盤面</span> <span class="score ${s==='A'?'me':'them'}">${ST.teams[s].lines} line${ST.teams[s].lines===1?'':'s'}</span>`;
+    el.innerHTML=o.map((qi,pos)=>{ const q=ST.questions[qi], open=ST.opened.includes(qi), done=isDone(qi), g=ST.got[qi]||{};
+      if(!open) return `<div class="cell back locked"><span class="bnum">${pos+1}</span><span class="q">?</span></div>`;
+      const cls=['cell',wReveal===qi?'reveal':'',done?'done':'',cur===qi?'current':'',win.has(pos)?'win':''].join(' ');
+      if(done){ const a=PH[qi+':'+s], b=PH[qi+':'+ot];
+        return `<div class="${cls}" data-qi="${qi}" style="cursor:zoom-in"><div class="ph">${a?`<img src="${a}" alt="">`:'<span></span>'}${b?`<img src="${b}" alt="">`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></div>`; }
+      return `<div class="${cls}" data-qi="${qi}"><span class="num">${pos+1}</span><span class="en">${esc(q.en)}</span>${q.zh?`<span class="czh">${esc(q.zh)}</span>`:''}
+        <span class="marks">${g.A?`<span class="pill me">✓ ${esc(tn('A'))}</span>`:''}${g.B?`<span class="pill them">✓ ${esc(tn('B'))}</span>`:''}</span></div>`; }).join('');
+    wShown[s]=drawFramesIn(el,o,wShown[s]);
+  }
+  wReveal=null;
+  renderWatchCard();
+}
+function renderWatchCard(){
+  const qc=$('qcard'); let qi=current();
+  if(qi==null){ const last=ST.opened[ST.opened.length-1]; if(last!=null) qi=last; }
+  if(qi==null){ qc.innerHTML=`<div class="empty">${readyIn(ST)?`👆 ${esc(tn(turnSide()))} is picking…<br><span class="zh">${esc(tn(turnSide()))} 選題中</span>`:'⏳ Waiting for players<br><span class="zh">等待學生加入</span>'}</div>`; return; }
+  const q=ST.questions[qi], w=ST.who[qi]||{}, g=ST.got[qi]||{}, done=isDone(qi);
+  const slot=s=>{ const src=g[s]?PH[qi+':'+s]:null, up=nm(w[s]);
+    return `<div class="slot ${s==='A'?'me':'them'}"><span class="who">${esc(tn(s))} · ${esc(up)}</span>${src?`<img src="${src}" data-lb="${qi}" alt="">`:`<span class="big">⏳</span>${esc(up)}<br><span class="zh">上傳中…</span>`}</div>`; };
+  qc.innerHTML=`<div class="lbl">${done?(current()==null&&ST.opened.length?'✓ Last question · 上一題':'✓ Complete · 完成'):'Now · 目前題目'}</div>
+    <div class="qen">${esc(q.en)}</div>${q.zh?`<div class="qzh">${esc(q.zh)}</div>`:''}
+    <div class="slots">${slot('A')}${slot('B')}</div>`;
+}
+function drawFramesIn(board,order,shown){
+  board.querySelectorAll('.frame').forEach(e=>e.remove());
+  const cells=[...board.querySelectorAll('.cell')]; if(cells.length!==16) return shown;
+  const O=4, now=new Set();
+  const box=(a,b,color,isNew)=>{ const A=cells[a],Bc=cells[b],f=document.createElement('div');
+    f.className='frame'+(isNew?' new':''); f.style.setProperty('--fc',color);
+    f.style.left=(A.offsetLeft-O)+'px'; f.style.top=(A.offsetTop-O)+'px';
+    f.style.width=(Bc.offsetLeft+Bc.offsetWidth-A.offsetLeft+2*O)+'px'; f.style.height=(Bc.offsetTop+Bc.offsetHeight-A.offsetTop+2*O)+'px';
+    board.appendChild(f); };
+  LINES.forEach((l,i)=>{ if(!l.every(p=>isDone(order[p]))) return; now.add(i); const isNew=!shown.has(i);
+    if(i<8) box(l[0],l[3],FRAME_COLORS[i],isNew); else l.forEach(p=>box(p,p,FRAME_COLORS[i],isNew)); });
+  return now;
+}
+function watchLightbox(qi){
+  const q=ST.questions[qi], g=ST.got[qi]||{};
+  $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
+  $('lbGrid').innerHTML=SIDES.map(s=>{ const src=PH[qi+':'+s]; return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(tn(s))} · ${esc(nm(g[s]))}</figcaption></figure>`; }).join('');
+  $('lbModal').classList.remove('hidden');
+}
+document.addEventListener('click',e=>{ if(!WATCH) return;
+  const c=e.target.closest('.wboard .cell.done'), im=e.target.closest('#qcard img[data-lb]');
+  if(c) watchLightbox(+c.dataset.qi); else if(im) watchLightbox(+im.dataset.lb); });
+addEventListener('resize',()=>{ if(WATCH&&ST) renderWatch(); });
+function watchURL(code){ return location.href.split('#')[0]+'#watch='+code+(T_LOCAL?'&local=1':''); }
+
+function myBingo(n){ fanfare(); confetti(160); setTimeout(()=>confetti(90),500); banner('BINGO!', n===1?'1st line! 第一條線！':`${n} lines! 第 ${n} 條線！`); }
+function partnerBingo(n){ chime(true); confetti(60,['#3d7bff','#7aa7ff','#ffc23d','#ffffff']);
+  const zhN=['零','一','二','三','四','五','六','七','八','九','十'][n]||n;
+  banner(`${tn(other(me().side))}: ${n} line${n>1?'s':''}!`,
+    `Your teammate got ${n} line${n>1?'s':''} — keep going! 你的隊友連成${zhN}條線了，你要繼續加油喔！`, 'them'); }
+
+/* ======================= LOBBY (choose team) ======================= */
+function showLobby(){
+  const cnt=s=>ST.members.filter(m=>m.side===s).length;
+  $('lobbyBody').innerHTML=`<p class="hint">Room <b>${esc(ST.label||CODE)}</b> · Hi ${esc(MYNAME)}! 選你要加入的隊伍：</p>
+    <div class="lobby-team">${SIDES.map(s=>`<button class="btn ${s==='A'?'a':'b'}" data-side="${s}"><span>Join ${esc(ST.teams[s].name)}</span><span class="cnt">${cnt(s)} 人</span></button>`).join('')}</div>`;
+  $('lobbyModal').classList.remove('hidden');
+}
+$('lobbyBody').addEventListener('click',e=>{
+  const b=e.target.closest('button[data-side]'); if(!b) return; unlockAudio();
+  act({type:'join',name:MYNAME,side:b.dataset.side});
+  $('lobbyBody').querySelectorAll('button').forEach(x=>x.disabled=true);
+});
+
+/* ======================= STUDENT SETUP ======================= */
+const idStore=()=>LOCAL?sstore:store;
+function saveLast(){ store.set('pb16v4:last',{code:CODE,local:LOCAL,name:MYNAME}); }
+function enterGame(){
+  $('setup').classList.add('hidden'); $('game').classList.remove('hidden');
+  $('qcard').innerHTML='<div class="empty">Connecting… 連線中</div>';
+  $('hCode').textContent=CODE+(LOCAL?' (local)':'');
+  updateStatus(); saveLast(); startClient();
+}
+function joinRoom(name,code,local){
+  MYNAME=name; CODE=code; LOCAL=local;
+  MYID=idStore().get('pb16v4:id:'+code); if(!MYID){ MYID=newId(); idStore().set('pb16v4:id:'+code,MYID); }
+  enterGame();
+}
+const last=store.get('pb16v4:last')||{};
+$('myName').value=last.name||'';
+$('joinBtn').onclick=()=>{
+  unlockAudio(); const name=$('myName').value.trim(), code=$('joinCode').value.trim().toUpperCase();
+  if(!name){ $('setupErr').textContent='請先輸入你的名字 · Please enter your name'; $('myName').focus(); return; }
+  if(code.length!==5){ $('setupErr').textContent='房間代碼是 5 個字元 · The code has 5 letters'; return; }
+  joinRoom(name,code,$('localMode').checked);
+};
+$('joinCode').addEventListener('keydown',e=>{ if(e.key==='Enter') $('joinBtn').click(); });
+if(last.code){ $('resumePanel').style.display=''; $('resumeBtn').textContent=`Room ${last.code}${last.local?' (local)':''} · ${last.name}`;
+  $('resumeBtn').onclick=()=>{ unlockAudio(); joinRoom(last.name,last.code,!!last.local); }; }
+$('exitBtn').onclick=()=>{ if(!confirm('離開遊戲？（可以從首頁回到這個房間）')) return; location.reload(); };
+
+/* ======================= QUESTION EDITOR (teacher) ======================= */
+let qDone=null;
+function qToText(q){ return q.map(x=>x.zh?`${x.en} | ${x.zh}`:x.en).join('\n'); }
+function openQEditor(q,cb){ qDone=cb; $('qText').value=qToText(q); $('qErr').textContent=''; $('qModal').classList.remove('hidden'); }
+$('qCancel').onclick=()=>$('qModal').classList.add('hidden');
+$('qReset').onclick=()=>{ $('qText').value=qToText(defaultQuestions()); };
+$('qSave').onclick=()=>{
+  const lines=$('qText').value.split('\n').map(s=>s.trim()).filter(Boolean);
+  if(lines.length!==16){ $('qErr').textContent=`目前有 ${lines.length} 題，需要剛好 16 題。`; return; }
+  $('qModal').classList.add('hidden');
+  qDone&&qDone(lines.map(l=>{ const [en,...zh]=l.split('|'); return {en:en.trim(),zh:zh.join('|').trim()}; }));
+};
+
+$('copyRules').onclick=async()=>{ try{ await navigator.clipboard.writeText($('rulesTxt').value); }catch(e){ $('rulesTxt').select(); document.execCommand('copy'); } toast('Copied 已複製','gold'); };
+/* ======================= ROUTER ======================= */
+$('toTeacher').onclick=e=>{ e.preventDefault(); location.hash='teacher'; location.reload(); };
+/* ======================= TEACHER PASSWORD =======================
+   Keeps students out of the teacher console. Only a hash is stored here. */
+const PW_HASH='d09ada927ab3a2dd0a02eaefc680136849fc4abf93a432ddec87a57f9d9897ec';
+function sha256hex(str){ // small pure-JS SHA-256 so it also works where crypto.subtle is unavailable
+  const K=[0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2];
+  const b=Array.from(new TextEncoder().encode(str)), l=b.length*8; b.push(0x80); while(b.length%64!==56) b.push(0);
+  for(let i=7;i>=0;i--) b.push(i>3?0:(l>>>(i*8))&255);
+  let H=[0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+  const r=(x,n)=>(x>>>n)|(x<<(32-n));
+  for(let o=0;o<b.length;o+=64){ const w=new Array(64);
+    for(let i=0;i<16;i++) w[i]=(b[o+4*i]<<24)|(b[o+4*i+1]<<16)|(b[o+4*i+2]<<8)|b[o+4*i+3];
+    for(let i=16;i<64;i++){ const s0=r(w[i-15],7)^r(w[i-15],18)^(w[i-15]>>>3), s1=r(w[i-2],17)^r(w[i-2],19)^(w[i-2]>>>10); w[i]=(w[i-16]+s0+w[i-7]+s1)|0; }
+    let [a,bb,c,d,e,f,g,h]=H;
+    for(let i=0;i<64;i++){ const t1=(h+(r(e,6)^r(e,11)^r(e,25))+((e&f)^(~e&g))+K[i]+w[i])|0, t2=((r(a,2)^r(a,13)^r(a,22))+((a&bb)^(a&c)^(bb&c)))|0;
+      h=g; g=f; f=e; e=(d+t1)|0; d=c; c=bb; bb=a; a=(t1+t2)|0; }
+    H=H.map((x,i)=>(x+[a,bb,c,d,e,f,g,h][i])|0); }
+  return H.map(x=>(x>>>0).toString(16).padStart(8,'0')).join('');
+}
+function teacherGate(next){
+  if(sstore.get('pb16t:ok')===PW_HASH || store.get('pb16t:ok')===PW_HASH) return next();
+  $('setup').classList.add('hidden');
+  const m=document.createElement('div'); m.className='modal'; m.style.background='var(--bg)';
+  m.innerHTML=`<div class="modal-box" style="max-width:400px;text-align:center"><div style="font-size:38px">🔒</div>
+    <h2 style="margin:6px 0 4px">Teacher only <span class="zh">老師專用</span></h2>
+    <p class="hint" style="margin:0 0 14px">請輸入老師密碼</p>
+    <input class="inp" id="pwIn" type="password" placeholder="Password 密碼" autocomplete="current-password" style="text-align:center">
+    <label class="check" style="justify-content:center"><input type="checkbox" id="pwRemember"> 在這台裝置記住（不用每次輸入）</label>
+    <div class="err" id="pwErr"></div>
+    <div class="row" style="margin-top:14px;justify-content:center"><button class="btn ghost" id="pwBack">← Student page 學生頁</button><button class="btn a" id="pwGo">Enter 進入</button></div></div>`;
+  document.body.appendChild(m);
+  const go=()=>{ if(sha256hex('pb16|'+$('pwIn').value)===PW_HASH){ sstore.set('pb16t:ok',PW_HASH); if($('pwRemember').checked) store.set('pb16t:ok',PW_HASH); m.remove(); next(); }
+    else { $('pwErr').textContent='密碼不對，請再試一次'; $('pwIn').select(); } };
+  $('pwGo').onclick=go; $('pwIn').addEventListener('keydown',e=>{ if(e.key==='Enter') go(); });
+  $('pwBack').onclick=()=>{ location.hash=''; location.reload(); };
+  setTimeout(()=>$('pwIn').focus(),50);
+}
+const wm=location.hash.match(/^#watch=([A-Z0-9]{5})(&local=1)?/);
+if(wm) teacherGate(()=>startWatch(wm[1],!!wm[2]));
+else if(location.hash==='#teacher') teacherGate(openTeacher);
+
+</script>
+</body>
+</html>
