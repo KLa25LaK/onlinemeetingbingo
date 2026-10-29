@@ -270,6 +270,20 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 .wboard .cell.back .bnum{font-size:clamp(20px,2.6vw,40px)}
 #wStart{z-index:90}
 @media (max-width:900px){ .wboards{flex-direction:column} #game.watch aside{width:100%} .wboard{width:100%} }
+
+/* Photos and video answers share the same cells and completion rules. */
+.clip-thumb{display:block;position:relative;width:100%;height:100%;min-height:40px;overflow:hidden;background:#2b2340;cursor:zoom-in}
+.clip-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.clip-play{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);background:rgba(43,35,64,.86);color:#fff;border-radius:30px;padding:7px 12px;font-size:14px;white-space:nowrap;pointer-events:none}
+.clip-fallback{display:grid;place-items:center;height:100%;color:white;font-size:14px}
+.slot>.clip-thumb{position:absolute;inset:0}
+.rc-thumbs>.clip-thumb{width:46px;height:46px;border-radius:8px}.rc-thumbs .clip-play{font-size:10px;padding:3px 5px}
+.mini .dn>.clip-thumb{width:50%;height:100%}.mini div.dn .clip-thumb img{width:100%;height:100%}.mini .clip-play{font-size:10px;padding:3px 5px}
+.lb-grid .answer-video{width:100%;max-height:70vh;background:#181421;border-radius:12px}
+#camPreview{width:100%;max-height:55vh;border-radius:12px;background:#181421}
+#camInfo{min-height:24px}#camModal .row{align-items:center}
+#mediaProgress{word-break:break-word}
+
 </style>
 </head>
 <body>
@@ -346,7 +360,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
         1. Teams take turns picking a hidden square. <span class="zh">兩隊輪流翻一格，隊上任何人都可以點。</span><br>
         2. The question pops up for everyone — but in a different spot on each team's board. <span class="zh">題目會同時跳出，但兩隊的位置不一樣！</span><br>
         3. The game picks one uploader per team (📸). <span class="zh">系統每題在每隊指定一位上傳者，輪流換人。</span><br>
-        4. Both teams' photos in → square done → next pick. <span class="zh">兩隊都上傳，這格才完成，才能翻下一格。</span><br>
+        4. Both teams' answers in → square done → next pick. <span class="zh">兩隊都上傳，這格才完成，才能翻下一格。</span><br>
         5. 4 in a row = <b>BINGO!</b>
       </div>
     </aside>
@@ -357,11 +371,16 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <div class="modal hidden" id="camModal">
   <div class="modal-box" style="max-width:640px">
     <video id="camVideo" autoplay playsinline muted></video>
+    <video id="camPreview" class="hidden" controls playsinline preload="metadata"></video>
+    <div class="hint" id="camInfo">Photos or videos up to 10 seconds · 可拍照或錄製最多 10 秒短片</div>
     <div class="err" id="camErr"></div>
     <div class="row" style="margin-top:12px">
       <button class="btn ghost" id="camCancel">Cancel 取消</button>
       <span class="grow"></span>
-      <button class="btn a" id="camSnap">📸 Take photo 拍照</button>
+      <button class="btn ghost sm" id="camFlip" disabled>Switch camera 切換前／後鏡頭</button>
+      <button class="btn a" id="camSnap" disabled>📸 Take photo 拍照</button>
+      <button class="btn b" id="camRecord" disabled>● Record 10s 錄影</button>
+      <button class="btn a hidden" id="camUse">Upload video 上傳這段影片</button>
     </div>
   </div>
 </div>
@@ -435,6 +454,12 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
       </div>
       <label class="check"><input type="checkbox" id="tLocal"> 本機測試模式（不連網路，在這台電腦開幾個學生分頁試玩；學生頁也要勾）</label>
     </div>
+    <div class="panel" id="pVideo">
+      <h2>Short videos <span class="zh">免費短片模式</span></h2>
+      <p class="hint">沿用目前的 Firebase Realtime Database，無需啟用 Storage、升級方案或填信用卡。保留原本的房間、照片與進度。</p>
+      <p class="hint">可拍照、錄製最多 10 秒短片及切換前後鏡頭；影片採較低畫質，單檔最多 1 MB。上傳現成影片也受相同限制，超過時請改用遊戲內錄影或縮短影片。</p>
+      <p class="hint">請使用 HTTPS 網址並允許相機／麥克風。維持 Spark 免費方案；儲存或下載流量用完時，服務可能受限，請先以測試房間確認。<a href="https://firebase.google.com/pricing" target="_blank" rel="noopener">查看免費額度</a></p>
+    </div>
     <div class="panel" id="pQ">
       <h2>1 · Questions <span class="zh">題目（所有房間共用）</span></h2>
       <ol class="qprev" id="qPrev"></ol>
@@ -491,7 +516,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
   </div>
 </div>
 
-<input type="file" id="fileIn" accept="image/*" class="hidden">
+<input type="file" id="fileIn" accept="image/*,video/mp4,video/webm,video/quicktime" class="hidden">
 <div id="toasts"></div>
 <div id="bingo" class="hidden"></div>
 <canvas id="fx"></canvas>
@@ -767,6 +792,11 @@ async function act(m){
   }
   else if(m.type==='photo'){
     const side=me().side, qi=m.qi;
+    let latest;
+    try{const raw=await B.get(R(CODE)+'/st'); latest=raw?JSON.parse(raw):null;}
+    catch(e){toast('Cannot verify this question. 無法確認目前題目，請重試。');return false;}
+    const member=latest&&latest.members.find(x=>x.id===MYID);
+    if(!latest||!member||member.side!==side||curIn(latest)!==qi||!latest.who[qi]||latest.who[qi][side]!==MYID){toast('Question or uploader changed. 題目或上傳者已變更。');return false;}
     try{ await B.set(R(CODE)+'/photos/'+qi+'_'+side,m.data); }catch(e){ toast('Upload failed, try again · 上傳失敗，請再試一次'); return; }
     ok=await txnRoom(CODE,st=>{
       if(curIn(st)!==qi) return fail('This question is already finished · 這題已經完成');
@@ -783,6 +813,7 @@ async function act(m){
   }
   if(!ok && why) toast(why);
   if(!ok && why===null && m.type!=='open') toast('Connection problem, try again · 連線不穩，請再試一次');
+  return ok;
 }
 function showNotice(text){
   let el=$('noticeBox'); if(el) el.remove();
@@ -825,12 +856,15 @@ function onCellClick(qi){
   if(turnSide()!==me().side) return toast(`It's ${tn(turnSide())}'s turn · 這次輪到對方選`,'b');
   act({type:'open',qi});
 }
-function addPhoto(data){
-  const qi=current(); if(qi==null) return;
+async function addPhoto(data,qi=current(),fromClip=false){
+  if(qi==null||!me()||(mediaBusy&&!fromClip)) return false;
   const side=me().side;
   if(ST.who[qi][side]!==MYID) return toast(`${nm(ST.who[qi][side])} uploads this one · 這題由 ${nm(ST.who[qi][side])} 上傳`);
-  PH[qi+':'+side]=data; render();
-  act({type:'photo',qi,data});
+  if(!hasUploadTurn(qi,side)) return false;
+  if(!fromClip)setMediaBusy(true);
+  try{return await act({type:'photo',qi,data});}
+  catch(e){toast('Upload failed. 上傳失敗，請確認連線後重試。');return false;}
+  finally{if(!fromClip)setMediaBusy(false);}
 }
 function showReveal(qi){
   const q=ST.questions[qi], my=me().side, ot=other(my), pos=ST.teams[my].order.indexOf(qi), w=ST.who[qi], pk=mem(w.picker)||{side:turnIn({opened:ST.opened.slice(0,-1)}),name:'?'};
@@ -873,7 +907,7 @@ function render(){
     if(!open) return `<button class="cell back ${pick?'':'locked'}" data-qi="${qi}"><span class="bnum">${pos+1}</span><span class="q">?</span></button>`;
     const cls=['cell',justRevealed===qi?'reveal':'',done?'done':'',cur===qi?'current':'',viewQi===qi&&cur!==qi?'active':'',winPos.has(pos)?'win':''].join(' ');
     if(done){ const a=PH[qi+':'+my], b=PH[qi+':'+ot];
-      return `<button class="${cls}" data-qi="${qi}"><div class="ph">${a?`<img src="${a}" alt="">`:'<span></span>'}${b?`<img src="${b}" alt="">`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></button>`; }
+      return `<button class="${cls}" data-qi="${qi}"><div class="ph">${a?`${mediaHTML(a,`alt=""`,false)}`:'<span></span>'}${b?`${mediaHTML(b,`alt=""`,false)}`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></button>`; }
     return `<button class="${cls}" data-qi="${qi}"><span class="num">${pos+1}</span><span class="en">${esc(q.en)}</span>${q.zh?`<span class="czh">${esc(q.zh)}</span>`:''}
       <span class="marks">${g[my]?`<span class="pill me">✓ ${esc(tn(my))}</span>`:''}${g[ot]?`<span class="pill them">✓ ${esc(tn(ot))}</span>`:''}</span></button>`;
   }).join('');
@@ -896,7 +930,7 @@ function renderCard(){
   }
   const q=ST.questions[qi], w=ST.who[qi], g=ST.got[qi]||{}, done=isDone(qi), iUp=w[my]===MYID;
   const slot=(side,cls)=>{ const src=(g[side]||cls==='me')?PH[qi+':'+side]:null, up=nm(w[side]);
-    const inner = src ? `<img src="${src}" data-lb="${qi}" alt="">`
+    const inner = src ? `${mediaHTML(src,`data-lb="${qi}" alt=""`,false)}`
       : g[side] ? '<span class="big">⌛</span><span class="loading">Loading… 載入中</span>'
       : cls==='me' ? `<span class="big">📷</span>${esc(up)}<br><span class="zh">負責上傳</span>`
       : `<span class="big">⏳</span>${esc(up)}<br><span class="zh">等對方上傳</span>`;
@@ -906,8 +940,8 @@ function renderCard(){
     if(iUp){
       qc.classList.add('mine-up');
       foot=`<div class="upnote me">📸 You upload this one! 這題由你上傳！<small>Answer together with your team, then upload · 和隊友一起回答，再由你上傳</small></div>
-        <div class="upbtns"><button class="btn a" id="camBtn">📸 Camera 拍照</button><button class="btn ghost" id="upBtn">🖼 Upload 上傳</button></div>
-        ${g[my]?'<div class="hint" style="text-align:center">You can replace your photo until both teams are in. 雙方都上傳前可以重拍。</div>':''}`;
+        <div class="upbtns"><button class="btn a" id="camBtn">📸 Camera 拍照／錄影</button><button class="btn ghost" id="upBtn">🖼 Upload 照片／影片</button></div>
+        ${g[my]?'<div class="hint" style="text-align:center">You can replace your answer until both teams are in. 雙方都上傳前可以重拍或更換影片。</div>':''}`;
     } else {
       const upM=mem(w[my]);
       foot=`<div class="upnote">📸 <b>${esc(nm(w[my]))}</b> uploads this one · 這題由 <b>${esc(nm(w[my]))}</b> 上傳<small>Help answer and get in the photo! 一起回答、一起入鏡！</small></div>
@@ -919,6 +953,10 @@ function renderCard(){
     <div class="slots">${slot(my,'me')}${slot(ot,'them')}</div>${foot}`;
   if($('camBtn')){ $('camBtn').onclick=openCam; $('upBtn').onclick=()=>{$('fileIn').value='';$('fileIn').click();}; }
   if($('takeBtn')) $('takeBtn').onclick=()=>act({type:'takeover',qi});
+  if(mediaBusy){
+    for(const id of ['camBtn','upBtn'])if($(id))$(id).disabled=true;
+    const n=document.createElement('div');n.id='mediaProgress';n.className='upnote';n.textContent=mediaProgressText;qc.appendChild(n);
+  }
 }
 function flashCell(qi){ const el=document.querySelector(`.cell[data-qi="${qi}"]`); if(el){ el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); } }
 
@@ -946,32 +984,194 @@ function compress(src){
   const max=640, w=src.videoWidth||src.naturalWidth||src.width, h=src.videoHeight||src.naturalHeight||src.height;
   const k=Math.min(1,max/Math.max(w,h)), c=document.createElement('canvas');
   c.width=Math.round(w*k); c.height=Math.round(h*k);
-  const x=c.getContext('2d'); if(src.tagName==='VIDEO'){ x.translate(c.width,0); x.scale(-1,1); }
+  const x=c.getContext('2d'); if(src.tagName==='VIDEO'&&camFacing==='user'){ x.translate(c.width,0); x.scale(-1,1); }
   x.drawImage(src,0,0,c.width,c.height); return c.toDataURL('image/jpeg',0.7);
 }
-$('fileIn').onchange=e=>{ const f=e.target.files[0]; if(!f) return; const url=URL.createObjectURL(f), img=new Image();
-  img.onload=()=>{ addPhoto(compress(img)); URL.revokeObjectURL(url); }; img.onerror=()=>toast('無法讀取這張圖片'); img.src=url; };
-let camStream=null;
-async function openCam(){
-  $('camErr').textContent=''; $('camModal').classList.remove('hidden');
-  try{ camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720}},audio:false}); $('camVideo').srcObject=camStream; }
-  catch(e){ $('camErr').innerHTML='Camera unavailable — try “Upload”.<br>無法開啟鏡頭（可能被視訊軟體占用），請改用「上傳」。'; }
+/* Photos keep their original data format. Videos use a small string descriptor;
+   the compressed clip stays in Realtime Database on the existing free plan. */
+const CLIP_PREFIX='pb16video:', MAX_CLIP_SECONDS=10, MAX_CLIP_BYTES=1024*1024;
+let mediaBusy=false,mediaProgressText='';
+function clipInfo(value){
+  if(typeof value!=='string'||!value.startsWith(CLIP_PREFIX)) return null;
+  try{const c=JSON.parse(value.slice(CLIP_PREFIX.length));
+    return c&&/^(https:\/\/|data:video\/(webm|mp4|quicktime);base64,)/.test(c.url)&&Number.isFinite(c.duration)&&c.duration>0?c:null;
+  }catch(e){return null;}
 }
-function closeCam(){ $('camModal').classList.add('hidden'); if(camStream){ camStream.getTracks().forEach(t=>t.stop()); camStream=null; } }
+function mediaHTML(value,attrs='',full=false){
+  const clip=clipInfo(value);
+  if(clip){
+    const poster=typeof clip.poster==='string'&&clip.poster.startsWith('data:image/jpeg;base64,')?clip.poster:'';
+    if(full) return `<video class="answer-video" controls playsinline preload="metadata" src="${esc(clip.url)}"${poster?` poster="${esc(poster)}"`:''}></video>`;
+    return `<span class="clip-thumb" ${attrs}>${poster?`<img src="${esc(poster)}" alt="Video preview">`:'<span class="clip-fallback">Video 影片</span>'}<span class="clip-play">▶ ${Math.min(10,Math.ceil(clip.duration))}s</span></span>`;
+  }
+  if(typeof value!=='string'||!(/^(data:image\/|blob:|https:\/\/)/.test(value))) return '<span class="empty">Media unavailable · 無法顯示</span>';
+  return `<img src="${esc(value)}" ${attrs}>`;
+}
+function closeLightbox(){ $('lbModal').querySelectorAll('video').forEach(v=>v.pause()); $('lbModal').classList.add('hidden'); }
+function hasUploadTurn(qi,side){return !!ST&&!!me()&&me().side===side&&current()===qi&&ST.who[qi]&&ST.who[qi][side]===MYID;}
+function setMediaBusy(busy,label=''){
+  mediaBusy=busy;mediaProgressText=busy?(label||'Uploading… 上傳中，請稍候'):'';
+  if(ST&&me()&&!WATCH) renderCard();
+  for(const id of ['camBtn','upBtn','camSnap','camRecord','camFlip','camUse']) if($(id)) $(id).disabled=busy;
+  if(busy&&$('qcard')&&!$('mediaProgress')){
+    const n=document.createElement('div'); n.id='mediaProgress'; n.className='upnote'; n.textContent=label||'Uploading… 上傳中，請稍候'; $('qcard').appendChild(n);
+  }
+}
+function uploadProgress(text){mediaProgressText=text;const n=$('mediaProgress');if(n)n.textContent=text;}
+function mediaError(e){return e&&e.message||'Upload failed. 上傳失敗，請確認網路與資料庫額度後再試。';}
+function blobDataURL(blob){return new Promise((resolve,reject)=>{const reader=new FileReader();reader.onload=()=>resolve(reader.result);reader.onerror=()=>reject(new Error('Cannot read this video. 無法讀取影片。'));reader.readAsDataURL(blob);});}
+async function inspectClip(blob,recordedDuration=null){
+  if(!blob.size||blob.size>MAX_CLIP_BYTES) throw new Error('Video must be 1 MB or smaller. 免費短片需在 1 MB 以內；請改用遊戲內錄影或縮短影片。');
+  if(!/^video\/(webm|mp4|quicktime)(;|$)/i.test(blob.type)) throw new Error('Please use MP4, WebM, or MOV. 請選擇 MP4、WebM 或 MOV 影片。');
+  const url=URL.createObjectURL(blob), v=document.createElement('video'); v.muted=true;v.playsInline=true;v.preload='auto';
+  try{
+    const duration=await new Promise((resolve,reject)=>{
+      const timer=setTimeout(()=>finish(new Error('Cannot read this video. 無法讀取影片，請改用 MP4 或重新錄影。')),12000);
+      let done=false;
+      function finish(error,value){if(done)return;done=true;clearTimeout(timer);v.onloadedmetadata=v.ontimeupdate=v.onerror=null;error?reject(error):resolve(value);}
+      v.onerror=()=>finish(new Error('Video format not supported. 裝置無法讀取這段影片，請換成 MP4 或重新錄影。'));
+      v.onloadedmetadata=()=>{
+        if(Number.isFinite(v.duration)&&v.duration>0) finish(null,v.duration);
+        else if(recordedDuration&&recordedDuration>0) finish(null,recordedDuration);
+        else {v.ontimeupdate=()=>{if(Number.isFinite(v.duration)&&v.duration>0)finish(null,v.duration);};v.currentTime=1e10;}
+      };
+      v.src=url;
+    });
+    if(!Number.isFinite(duration)||duration<=0||duration>MAX_CLIP_SECONDS+0.25) throw new Error('Please choose a video of 10 seconds or less. 請選擇 10 秒以內的影片，或使用遊戲內錄影。');
+    // A thumbnail is optional; playback still works if the browser cannot decode a frame.
+    let poster='';
+    try{
+      await new Promise(resolve=>{const t=setTimeout(resolve,1500);v.onloadeddata=v.onseeked=()=>{clearTimeout(t);resolve();};v.currentTime=0;if(v.readyState>=2){clearTimeout(t);resolve();}});
+      if(v.videoWidth&&v.readyState>=2){const c=document.createElement('canvas');c.width=320;c.height=Math.round(320*v.videoHeight/v.videoWidth);c.getContext('2d').drawImage(v,0,0,c.width,c.height);poster=c.toDataURL('image/jpeg',0.65);}
+    }catch(e){}
+    return {duration,poster};
+  }finally{v.pause();v.removeAttribute('src');v.load();URL.revokeObjectURL(url);}
+}
+async function uploadClip(blob,qi,recordedDuration=null){
+  if(mediaBusy)return false;
+  const side=me()&&me().side;
+  if(!hasUploadTurn(qi,side)){toast('This question has changed. 題目或上傳者已變更，請重新確認。');return false;}
+  if(LOCAL){toast('Please use an online room for videos. 影片請使用連線房間測試；本機模式可拍照。');return false;}
+  setMediaBusy(true,'Preparing video… 準備影片中');
+  try{
+    const info=await inspectClip(blob,recordedDuration);
+    const data=await blobDataURL(new Blob([blob],{type:blob.type.split(';')[0]}));
+    const descriptor=CLIP_PREFIX+JSON.stringify({url:data,duration:info.duration,poster:info.poster});
+    // Preserve the existing < 1,500,000-character Realtime Database validation rule.
+    if(descriptor.length>=1500000)throw new Error('Video is too large. 影片太大，請縮短影片或改用遊戲內錄影。');
+    if(!hasUploadTurn(qi,side))throw new Error('Question changed. 題目或上傳者已變更，請重新確認。');
+    uploadProgress('Uploading video… 影片上傳中，請稍候');
+    const ok=await addPhoto(descriptor,qi,true);
+    if(!ok)throw new Error('Could not submit this answer. 答案未能提交，請確認目前題目後重試。');
+    toast('Video uploaded! 影片已上傳','gold');return true;
+  }catch(e){toast(mediaError(e));return false;}
+  finally{setMediaBusy(false);}
+}
+let camStream=null,camFacing='user',camDeviceId=null,camDevices=[],camRequest=0,camOpen=false;
+let recorder=null,recordTimer=null,recordClock=null,micStream=null,pendingClip=null,pendingDuration=null,previewURL=null,recordStarted=0,camTarget=null;
+function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop());}
+function clearPreview(){pendingClip=null;pendingDuration=null;if(previewURL)URL.revokeObjectURL(previewURL);previewURL=null;$('camPreview').pause();$('camPreview').removeAttribute('src');$('camPreview').load();$('camPreview').classList.add('hidden');$('camVideo').classList.remove('hidden');$('camUse').classList.add('hidden');}
+function recordingControls(busy){$('camSnap').disabled=busy||mediaBusy;$('camFlip').disabled=busy||mediaBusy;$('camUse').disabled=busy||mediaBusy;}
+async function startCamera(flip=false){
+  const request=++camRequest;
+  $('camErr').textContent='';$('camSnap').disabled=$('camRecord').disabled=$('camFlip').disabled=true;
+  stopTracks(camStream);camStream=null;
+  try{
+    if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia)throw new Error('Use an HTTPS website to open the camera. 請使用 HTTPS 網址開啟鏡頭。');
+    let wantedId=null;
+    if(flip&&camDevices.length>1){const at=camDevices.findIndex(d=>d.deviceId===camDeviceId);wantedId=camDevices[(at+1)%camDevices.length].deviceId;}
+    let stream;
+    try{stream=await navigator.mediaDevices.getUserMedia({video:{...(wantedId?{deviceId:{exact:wantedId}}:{facingMode:{ideal:camFacing}}),width:{ideal:480},height:{ideal:360}},audio:false});}
+    catch(e){if(wantedId)stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:camFacing},width:{ideal:480},height:{ideal:360}},audio:false});else throw e;}
+    if(!camOpen||request!==camRequest){stopTracks(stream);return;}
+    camStream=stream;const settings=stream.getVideoTracks()[0].getSettings();camDeviceId=settings.deviceId||null;
+    camFacing=settings.facingMode||camFacing;
+    $('camVideo').style.transform=camFacing==='user'?'scaleX(-1)':'none';
+    $('camVideo').srcObject=stream;await $('camVideo').play();
+    if(!camOpen||request!==camRequest)return;
+    camDevices=(await navigator.mediaDevices.enumerateDevices()).filter(d=>d.kind==='videoinput');
+    $('camSnap').disabled=false;$('camRecord').disabled=typeof MediaRecorder==='undefined'||LOCAL;
+    $('camFlip').disabled=camDevices.length<2;
+    $('camFlip').textContent=camDevices.length<2?'One camera 單一鏡頭':'Switch camera 切換前／後鏡頭';
+    $('camInfo').textContent=LOCAL?'Local mode: photos only · 本機模式可拍照；錄影請使用連線房間':typeof MediaRecorder==='undefined'?'This browser supports photos only · 此瀏覽器僅支援拍照，影片可改用上傳':'Photos or videos up to 10 seconds · 可拍照或錄製最多 10 秒短片';
+  }catch(e){if(request===camRequest&&camOpen){stopTracks(camStream);camStream=null;$('camErr').textContent='Camera unavailable. Try Upload. 鏡頭無法開啟，可能被視訊軟體占用，請改用上傳。';}}
+}
+async function openCam(){
+  if(mediaBusy||!me())return;
+  camTarget=current();if(camTarget==null)return;
+  camOpen=true;clearPreview();$('camModal').classList.remove('hidden');$('camRecord').textContent='● Record 10s 錄影';await startCamera();
+}
+function closeCam(){
+  camOpen=false;++camRequest;
+  clearTimeout(recordTimer);clearInterval(recordClock);
+  if(recorder){recorder.onstop=null;recorder.ondataavailable=null;if(recorder.state!=='inactive')recorder.stop();recorder=null;}
+  stopTracks(micStream);micStream=null;stopTracks(camStream);camStream=null;$('camVideo').srcObject=null;
+  clearPreview();$('camModal').classList.add('hidden');$('camRecord').textContent='● Record 10s 錄影';
+}
+async function startRecording(){
+  if(recorder&&recorder.state==='recording'){recorder.stop();return;}
+  if(!camStream||mediaBusy)return;
+  if(typeof MediaRecorder==='undefined'){toast('Recording unavailable. Please upload a short video. 此瀏覽器不支援錄影，請改用上傳。');return;}
+  clearPreview();recordingControls(true);$('camRecord').disabled=true;
+  $('camInfo').textContent='Checking microphone… 請允許麥克風，拒絕則錄製無聲短片';
+  const request=camRequest;
+  try{
+    let sound=null;
+    try{sound=await navigator.mediaDevices.getUserMedia({audio:true,video:false});}catch(e){}
+    if(!camOpen||request!==camRequest){stopTracks(sound);return;}
+    micStream=sound;
+    const stream=new MediaStream([...camStream.getVideoTracks(),...(sound?sound.getAudioTracks():[])]);
+    const type=['video/webm;codecs=vp8,opus','video/webm','video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4'].find(t=>MediaRecorder.isTypeSupported(t));
+    const rec=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),videoBitsPerSecond:320000,audioBitsPerSecond:32000});
+    recorder=rec;let chunks=[];
+    rec.ondataavailable=e=>{if(e.data.size)chunks.push(e.data);};
+    rec.onerror=()=>{$('camErr').textContent='Recording failed. Please try again. 錄影失敗，請再試一次。';if(rec.state!=='inactive')rec.stop();};
+    rec.onstop=()=>{
+      clearTimeout(recordTimer);clearInterval(recordClock);stopTracks(micStream);micStream=null;recorder=null;
+      if(!camOpen)return;
+      pendingDuration=(performance.now()-recordStarted)/1000;
+      if(pendingDuration>10.25){$('camErr').textContent='Recording exceeded 10 seconds. Please record again. 錄影超過 10 秒，請重新錄製。';pendingClip=null;}
+      else{
+        pendingClip=new Blob(chunks,{type:rec.mimeType||type||'video/webm'});previewURL=URL.createObjectURL(pendingClip);$('camPreview').src=previewURL;
+        $('camPreview').classList.remove('hidden');$('camVideo').classList.add('hidden');$('camUse').classList.remove('hidden');
+        $('camInfo').textContent='Preview your clip, then upload or record again. 預覽後可上傳或重新錄影。';
+      }
+      $('camRecord').textContent='● Record again 重新錄影';$('camRecord').disabled=false;recordingControls(false);
+    };
+    recordStarted=performance.now();rec.start(200);
+    const showTime=()=>{$('camInfo').textContent=`Recording ${Math.min(10,Math.floor((performance.now()-recordStarted)/1000))}/10s · 錄影中${sound?'':'（無聲）'}`;};
+    showTime();recordClock=setInterval(showTime,200);recordTimer=setTimeout(()=>{if(rec.state==='recording')rec.stop();},9800);
+    $('camRecord').textContent='■ Stop 停止錄影';$('camRecord').disabled=false;
+  }catch(e){stopTracks(micStream);micStream=null;recorder=null;recordingControls(false);$('camRecord').disabled=false;$('camErr').textContent='Recording unavailable. Try uploading a video. 無法錄影，請改用上傳影片。';}
+}
+$('camFlip').onclick=async()=>{if(recorder||mediaBusy)return;clearPreview();camFacing=camFacing==='user'?'environment':'user';await startCamera(true);};
+$('camRecord').onclick=startRecording;
 $('camCancel').onclick=closeCam;
-$('camSnap').onclick=()=>{ const v=$('camVideo'); if(!v.videoWidth) return; const d=compress(v); closeCam(); shutter(); addPhoto(d); };
+$('camSnap').onclick=()=>{const v=$('camVideo');if(!v.videoWidth||recorder||mediaBusy)return;const qi=camTarget,d=compress(v);closeCam();shutter();addPhoto(d,qi);};
+$('camUse').onclick=async()=>{if(!pendingClip||mediaBusy)return;const blob=pendingClip,qi=camTarget,duration=pendingDuration;closeCam();await uploadClip(blob,qi,duration);};
+$('camModal').addEventListener('click',e=>{if(e.target.id==='camModal')closeCam();});
+addEventListener('pagehide',closeCam);
+$('fileIn').onchange=async e=>{
+  const f=e.target.files[0],qi=current();if(!f||qi==null||mediaBusy)return;
+  if(f.type.startsWith('video/')){await uploadClip(f,qi);return;}
+  if(!f.type.startsWith('image/')){toast('Please choose a photo or video. 請選擇照片或影片。');return;}
+  const url=URL.createObjectURL(f),img=new Image();
+  img.onload=()=>{try{addPhoto(compress(img),qi);}finally{URL.revokeObjectURL(url);}};
+  img.onerror=()=>{URL.revokeObjectURL(url);toast('Cannot read this image. 無法讀取這張圖片。');};img.src=url;
+};
+
 function openLightbox(qi){
   if(WATCH) return;
   const q=ST.questions[qi], my=me().side, ot=other(my), w=ST.who[qi]||{};
   $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
-  const fig=(side,color)=>{ const src=PH[qi+':'+side]; return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:${color}">${esc(tn(side))} · ${esc(nm((ST.got[qi]||{})[side]||w[side]))}</figcaption></figure>`; };
+  const fig=(side,color)=>{ const src=PH[qi+':'+side]; return `<figure>${src?`${mediaHTML(src,``,true)}`:'<div class="empty">—</div>'}<figcaption style="color:${color}">${esc(tn(side))} · ${esc(nm((ST.got[qi]||{})[side]||w[side]))}</figcaption></figure>`; };
   $('lbGrid').innerHTML=fig(my,'var(--a)')+fig(ot,'var(--b)');
   $('lbModal').classList.remove('hidden');
 }
-$('lbClose').onclick=()=>$('lbModal').classList.add('hidden');
-$('lbModal').onclick=e=>{ if(e.target.id==='lbModal') $('lbModal').classList.add('hidden'); };
+$('lbClose').onclick=closeLightbox;
+$('lbModal').onclick=e=>{ if(e.target.id==='lbModal') closeLightbox(); };
 $('board').addEventListener('click',e=>{ const c=e.target.closest('.cell'); if(c) onCellClick(+c.dataset.qi); });
-$('qcard').addEventListener('click',e=>{ const im=e.target.closest('img[data-lb]'); if(im) openLightbox(+im.dataset.lb); });
+$('qcard').addEventListener('click',e=>{ const im=e.target.closest('[data-lb]'); if(im) openLightbox(+im.dataset.lb); });
 /* ======================= FX: SOUND ======================= */
 let AC=null;
 function unlockAudio(){ try{ AC=AC||new (window.AudioContext||window.webkitAudioContext)(); if(AC.state==='suspended') AC.resume(); }catch(e){} }
@@ -1018,7 +1218,7 @@ function toast(msg,kind){ const t=document.createElement('div'); t.className='to
    cloud database, so closing this page never stops any room.
    ===================================================================== */
 const OBJ=new Map(); // dashboard photos as cached blob URLs
-function toObjURL(d){ const i=d.indexOf(','), h=d.slice(0,i); if(!h.endsWith(';base64')) return d;
+function toObjURL(d){ if(clipInfo(d)) return d; const i=d.indexOf(','), h=d.slice(0,i); if(!h.endsWith(';base64')) return d;
   const bin=atob(d.slice(i+1)), u8=new Uint8Array(bin.length); for(let k=0;k<bin.length;k++) u8[k]=bin.charCodeAt(k);
   return URL.createObjectURL(new Blob([u8],{type:h.slice(5,-7)||'image/jpeg'})); }
 function purl(r,key){ const d=r.photos[key]; if(!d) return null; const ck=r.code+'|'+key; const e=OBJ.get(ck);
@@ -1104,7 +1304,7 @@ async function openTeacher(){
   const firstEv=await B.get(evPath());
   if(firstEv && Object.keys(firstEv.codes||{}).length) setTab('live'); else setTab('setup');
 }
-function lockSetup(on){ ['pQ','pRooms','pShare','pEvent'].forEach(id=>$(id).style.opacity=on?.45:1); ['pQ','pRooms','pShare','pEvent'].forEach(id=>$(id).style.pointerEvents=on?'none':''); }
+function lockSetup(on){ ['pQ','pRooms','pShare','pEvent','pVideo'].forEach(id=>$(id).style.opacity=on?.45:1); ['pQ','pRooms','pShare','pEvent','pVideo'].forEach(id=>$(id).style.pointerEvents=on?'none':''); }
 function renderConn(){
   const cfg=savedConfig();
   $('connState').innerHTML=T_LOCAL?'🧪 本機測試模式：只能在這台電腦的分頁之間測試'
@@ -1247,7 +1447,7 @@ function renderLive(){
         <span class="ln" style="background:var(--${s==='A'?'a':'b'}-soft)">${st.teams[s].lines} line${st.teams[s].lines===1?'':'s'}</span>${chipsFor(st,s,info.cur)}</div>`).join('')}
       <div><div class="prog"><i style="width:${info.done/16*100}%"></i></div><div class="hint" style="margin-top:4px">${info.done}/16 squares done · 完成 ${info.done} 格</div></div>
       <div class="rc-now">${nowText(r,info)}${info.issues.map(x=>`<br><span class="${x.lvl==='bad'?'alert':'amber'}">${esc(x.t)}</span>`).join('')}</div>
-      ${thumbs.length?`<div class="rc-thumbs">${thumbs.map(t=>`<img src="${t}" alt="">`).join('')}</div>`:''}
+      ${thumbs.length?`<div class="rc-thumbs">${thumbs.map(t=>`${mediaHTML(t,`alt=""`,false)}`).join('')}</div>`:''}
     </div>`; }).join('');
 }
 $('roomGrid').addEventListener('click',e=>{ const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
@@ -1277,7 +1477,7 @@ function renderRoomModal(){
       if(!st.opened.includes(qi)) return `<div>${pos+1}</div>`;
       if(!isDoneIn(st,qi)) return `<div class="op ${win.has(pos)?'wn':''}">${esc(q.en)}</div>`;
       const a=purl(r,qi+':'+s), b=purl(r,qi+':'+ot);
-      return `<div class="dn ${win.has(pos)?'wn':''}">${a?`<img src="${a}" data-lbq="${qi}">`:''}${b?`<img src="${b}" data-lbq="${qi}">`:''}</div>`; }).join(''); };
+      return `<div class="dn ${win.has(pos)?'wn':''}">${a?`${mediaHTML(a,`data-lbq="${qi}"`,false)}`:''}${b?`${mediaHTML(b,`data-lbq="${qi}"`,false)}`:''}</div>`; }).join(''); };
   $('rmBody').innerHTML=`
     <div class="sec-t">Now 目前狀況</div>
     <div class="rc-now">${nowText(r,info)}${info.issues.map(x=>`<br><span class="${x.lvl==='bad'?'alert':'amber'}">${esc(x.t)}</span>`).join('')}</div>
@@ -1300,7 +1500,7 @@ $('rmBody').addEventListener('change',async e=>{
 });
 $('rmBody').addEventListener('click',async e=>{
   const code=openRoomCode, r=ROOMS[code]; if(!r||!r.st) return; const on={...r.on};
-  const mv=e.target.closest('[data-move]'), rm=e.target.closest('[data-remove]'), rs=e.target.closest('[data-reset]'), im=e.target.closest('img[data-lbq]');
+  const mv=e.target.closest('[data-move]'), rm=e.target.closest('[data-remove]'), rs=e.target.closest('[data-reset]'), im=e.target.closest('[data-lbq]');
   if(mv){ const id=mv.dataset.move;
     await txnRoom(code,st=>{ const m=st.members.find(x=>x.id===id); if(!m) return; const old=m.side; m.side=other(old); fixAssign(st,old,id,on); return st; }); }
   else if(rm){ const m=rMember(r,rm.dataset.remove); if(!m||!confirm(`把 ${m.name} 移出這個房間？（他可以重新加入）`)) return;
@@ -1311,7 +1511,7 @@ $('rmBody').addEventListener('click',async e=>{
   else if(im){ const qi=+im.dataset.lbq, st=r.st, q=st.questions[qi];
     $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
     $('lbGrid').innerHTML=SIDES.map(s=>{ const src=purl(r,qi+':'+s), who=(rMember(r,st.got[qi][s])||{}).name||'';
-      return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(st.teams[s].name)}${who?' · '+esc(who):''}</figcaption></figure>`; }).join('');
+      return `<figure>${src?`${mediaHTML(src,``,true)}`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(st.teams[s].name)}${who?' · '+esc(who):''}</figcaption></figure>`; }).join('');
     $('lbModal').classList.remove('hidden'); }
 });
 
@@ -1384,7 +1584,7 @@ function renderWatch(){
       if(!open) return `<div class="cell back locked"><span class="bnum">${pos+1}</span><span class="q">?</span></div>`;
       const cls=['cell',wReveal===qi?'reveal':'',done?'done':'',cur===qi?'current':'',win.has(pos)?'win':''].join(' ');
       if(done){ const a=PH[qi+':'+s], b=PH[qi+':'+ot];
-        return `<div class="${cls}" data-qi="${qi}" style="cursor:zoom-in"><div class="ph">${a?`<img src="${a}" alt="">`:'<span></span>'}${b?`<img src="${b}" alt="">`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></div>`; }
+        return `<div class="${cls}" data-qi="${qi}" style="cursor:zoom-in"><div class="ph">${a?`${mediaHTML(a,`alt=""`,false)}`:'<span></span>'}${b?`${mediaHTML(b,`alt=""`,false)}`:'<span></span>'}</div><span class="tick">✓</span><div class="cap">${esc(q.en)}</div></div>`; }
       return `<div class="${cls}" data-qi="${qi}"><span class="num">${pos+1}</span><span class="en">${esc(q.en)}</span>${q.zh?`<span class="czh">${esc(q.zh)}</span>`:''}
         <span class="marks">${g.A?`<span class="pill me">✓ ${esc(tn('A'))}</span>`:''}${g.B?`<span class="pill them">✓ ${esc(tn('B'))}</span>`:''}</span></div>`; }).join('');
     wShown[s]=drawFramesIn(el,o,wShown[s]);
@@ -1398,7 +1598,7 @@ function renderWatchCard(){
   if(qi==null){ qc.innerHTML=`<div class="empty">${readyIn(ST)?`👆 ${esc(tn(turnSide()))} is picking…<br><span class="zh">${esc(tn(turnSide()))} 選題中</span>`:'⏳ Waiting for players<br><span class="zh">等待學生加入</span>'}</div>`; return; }
   const q=ST.questions[qi], w=ST.who[qi]||{}, g=ST.got[qi]||{}, done=isDone(qi);
   const slot=s=>{ const src=g[s]?PH[qi+':'+s]:null, up=nm(w[s]);
-    return `<div class="slot ${s==='A'?'me':'them'}"><span class="who">${esc(tn(s))} · ${esc(up)}</span>${src?`<img src="${src}" data-lb="${qi}" alt="">`:`<span class="big">⏳</span>${esc(up)}<br><span class="zh">上傳中…</span>`}</div>`; };
+    return `<div class="slot ${s==='A'?'me':'them'}"><span class="who">${esc(tn(s))} · ${esc(up)}</span>${src?`${mediaHTML(src,`data-lb="${qi}" alt=""`,false)}`:`<span class="big">⏳</span>${esc(up)}<br><span class="zh">上傳中…</span>`}</div>`; };
   qc.innerHTML=`<div class="lbl">${done?(current()==null&&ST.opened.length?'✓ Last question · 上一題':'✓ Complete · 完成'):'Now · 目前題目'}</div>
     <div class="qen">${esc(q.en)}</div>${q.zh?`<div class="qzh">${esc(q.zh)}</div>`:''}
     <div class="slots">${slot('A')}${slot('B')}</div>`;
@@ -1419,11 +1619,11 @@ function drawFramesIn(board,order,shown){
 function watchLightbox(qi){
   const q=ST.questions[qi], g=ST.got[qi]||{};
   $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
-  $('lbGrid').innerHTML=SIDES.map(s=>{ const src=PH[qi+':'+s]; return `<figure>${src?`<img src="${src}">`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(tn(s))} · ${esc(nm(g[s]))}</figcaption></figure>`; }).join('');
+  $('lbGrid').innerHTML=SIDES.map(s=>{ const src=PH[qi+':'+s]; return `<figure>${src?`${mediaHTML(src,``,true)}`:'<div class="empty">—</div>'}<figcaption style="color:var(--${s==='A'?'a':'b'})">${esc(tn(s))} · ${esc(nm(g[s]))}</figcaption></figure>`; }).join('');
   $('lbModal').classList.remove('hidden');
 }
 document.addEventListener('click',e=>{ if(!WATCH) return;
-  const c=e.target.closest('.wboard .cell.done'), im=e.target.closest('#qcard img[data-lb]');
+  const c=e.target.closest('.wboard .cell.done'), im=e.target.closest('#qcard [data-lb]');
   if(c) watchLightbox(+c.dataset.qi); else if(im) watchLightbox(+im.dataset.lb); });
 addEventListener('resize',()=>{ if(WATCH&&ST) renderWatch(); });
 function watchURL(code){ return location.href.split('#')[0]+'#watch='+code+(T_LOCAL?'&local=1':''); }
