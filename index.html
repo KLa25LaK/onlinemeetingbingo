@@ -136,6 +136,10 @@ aside{width:360px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;over
 .slot.me .who{background:var(--a);color:#fff} .slot.them .who{background:var(--b);color:#fff}
 .slot .big{font-size:30px}
 .upbtns{display:flex;gap:8px;margin-top:12px}
+.slot.pick{width:100%;font:inherit;cursor:pointer;border:2px dashed var(--a);background:var(--a-soft);color:#c2401f;transition:transform .1s}
+.slot.pick:hover{transform:translateY(-2px)}.slot.pick:active{transform:translateY(1px)}.slot.pick b{font-size:15px}.slot.pick:disabled{opacity:.5;cursor:default}
+.slot.pick.open{cursor:default;padding:8px}.slot.pick.open .who{display:none}
+.slot-menu{display:flex;flex-direction:column;gap:8px;width:100%}.slot-menu .btn{width:100%;font-size:15px;padding:10px 6px;line-height:1.25}.slot-menu .btn .zh{font-size:12px;font-weight:500}.slot-menu .linkbtn{margin:0}
 .upbtns .btn{flex:1;font-size:15px;padding:11px}
 .empty{color:var(--muted);text-align:center;padding:30px 10px;line-height:1.6}
 .how{font-size:13px;color:var(--muted);line-height:1.6;background:var(--card);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow)}
@@ -302,7 +306,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <div id="setup">
   <div class="logo">
     <div class="logo-grid"><i class="on"></i><i></i><i></i><i class="on2"></i><i></i><i class="on"></i><i class="on2"></i><i></i><i></i><i class="on2"></i><i class="on"></i><i></i><i class="on2"></i><i></i><i></i><i class="on"></i></div>
-    <div><h1>Bingo 16</h1><div class="build-tag">test 52</div></div>
+    <div><h1>Bingo 16</h1><div class="build-tag">test 53</div></div>
   </div>
   <p class="sub">Enter your name and the room code from your teacher. <span class="zh">輸入你的名字和老師給的房間代碼。</span></p>
 
@@ -358,7 +362,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
     <div class="tb" id="tThem"></div>
     <span class="turn" id="turn"></span>
     <div class="status wait" id="status" style="margin-left:0"><span class="led"></span><span id="statusTxt">Connecting…</span></div>
-    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 52</small>
+    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 53</small>
     <button class="btn ghost sm" id="downloadMoments">↓ Our Moments 下載成果</button>
     <button class="btn ghost sm" id="exitBtn">Exit</button>
   </header>
@@ -425,7 +429,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <!-- ================= TEACHER CONSOLE ================= -->
 <div id="teacher" class="hidden">
   <header class="t-head">
-    <small class="build-tag">test 52</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
+    <small class="build-tag">test 53</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
     <div class="tabs"><button class="tab on" data-tab="setup">Setup 設定</button><button class="tab" data-tab="live">Live 監控</button></div>
     <div class="status wait" id="tStatus" style="margin-left:auto"><span class="led"></span><span id="tStatusTxt">Offline</span></div>
     <a class="btn ghost sm" href="#" id="tExit" style="text-decoration:none">Student page 學生頁</a>
@@ -883,7 +887,7 @@ function effects(a,b){
 }
 
 /* ======================= ACTIONS ======================= */
-let justRevealed=null, viewQi=null;
+let justRevealed=null, viewQi=null, slotMenuQi=null;
 function onCellClick(qi){
   unlockAudio();
   if(ST.opened.includes(qi)){ if(isDone(qi)){ viewQi=qi; render(); openLightbox(qi); } return; }
@@ -968,18 +972,24 @@ function renderCard(){
   const slot=(side,cls)=>{ const src=(g[side]||cls==='me')?answerValue(PH,ST,qi,side):null, up=g[side]?nm(g[side]):'Anyone on the team 任一隊員';
     const inner = src ? `${mediaHTML(src,`data-lb="${qi}" alt=""`,false)}`
       : g[side] ? '<span class="big">⌛</span><span class="loading">Loading… 載入中</span>'
-      : cls==='me' ? `<span class="big">📷</span>${esc(up)}<br><span class="zh">負責上傳</span>`
+      : cls==='me' ? (slotMenuQi===qi
+        ? `<div class="slot-menu"><button class="btn a" id="slotCam">📸 Camera<br><span class="zh">拍照／錄影</span></button><button class="btn ghost" id="slotUp">🖼 Upload<br><span class="zh">照片／影片</span></button><button class="linkbtn" id="slotBack">Cancel 取消</button></div>`
+        : `<span class="big">📷</span><b>Tap to upload</b><span class="zh">點這裡上傳</span>`)
       : `<span class="big">⏳</span>${esc(up)}<br><span class="zh">等對方上傳</span>`;
-    return `<div class="slot ${cls}"><span class="who">${esc(tn(side))} · ${esc(up)}</span>${inner}</div>`; };
-  const foot=`<div class="upnote">${g[my]?'✓ 本隊已上傳；可繼續更換照片或影片。':'📸 本隊任何成員都可以上傳。'}<small>Everyone on your team can upload or replace this answer. 更換不會清除完成狀態或連線；下載成果時使用當下最新版。</small></div>
-    <div class="upbtns"><button class="btn a" id="camBtn">📸 ${g[my]?'重拍／重錄':'Camera 拍照／錄影'}</button><button class="btn ghost" id="upBtn">🖼 ${g[my]?'更換照片／影片':'Upload 照片／影片'}</button></div>`;
+    const pick=cls==='me'&&!src&&!g[side];
+    return pick&&slotMenuQi!==qi
+      ? `<button type="button" class="slot ${cls} pick" id="pickSlot"><span class="who">${esc(tn(side))} · ${esc(up)}</span>${inner}</button>`
+      : `<div class="slot ${cls}${pick?' pick open':''}"><span class="who">${esc(tn(side))} · ${esc(up)}</span>${inner}</div>`; };
+  if(slotMenuQi!==qi||g[my]) slotMenuQi=null;
+  const foot=`<div class="upnote">${g[my]?'✓ 本隊已上傳；點本隊的作品可以重拍或更換。':'📸 本隊任何成員都可以上傳。'}<small>${g[my]?'Tap your team\'s answer to retake or replace it.':'Tap your team\'s box to take a photo / video or upload a file.'} 更換不會清除完成狀態或連線；下載成果時使用當下最新版。</small></div>`;
   qc.innerHTML=`<div class="lbl">${done?'✓ Complete · 完成':'Question · 題目'}</div>
     <div class="qen">${esc(q.en)}</div>${q.zh?`<div class="qzh">${esc(q.zh)}</div>`:''}
     <div class="slots">${slot(my,'me')}${slot(ot,'them')}</div>${foot}`;
-  if($('camBtn')){ $('camBtn').onclick=()=>openCam(qi); $('upBtn').onclick=()=>chooseAnswerFile(qi); }
+  if($('pickSlot')) $('pickSlot').onclick=()=>{ if(mediaBusy) return; slotMenuQi=qi; renderCard(); };
+  if($('slotCam')){ $('slotCam').onclick=()=>{ slotMenuQi=null; renderCard(); openCam(qi); }; $('slotUp').onclick=()=>{ slotMenuQi=null; renderCard(); chooseAnswerFile(qi); }; $('slotBack').onclick=()=>{ slotMenuQi=null; renderCard(); }; }
   if($('takeBtn')) $('takeBtn').onclick=()=>act({type:'takeover',qi});
   if(mediaBusy){
-    for(const id of ['camBtn','upBtn'])if($(id))$(id).disabled=true;
+    for(const id of ['pickSlot','slotCam','slotUp'])if($(id))$(id).disabled=true;
     const n=document.createElement('div');n.id='mediaProgress';n.className='upnote';n.textContent=mediaProgressText;qc.appendChild(n);
   }
 }
@@ -1042,7 +1052,7 @@ function hasUploadTurn(qi,side){return !!ST&&!!me()&&me().side===side&&ST.opened
 function setMediaBusy(busy,label=''){
   mediaBusy=busy;mediaProgressText=busy?(label||'Uploading… 上傳中，請稍候'):'';
   if(ST&&me()&&!WATCH) renderCard();
-  for(const id of ['camBtn','upBtn','camSnap','camRecord','camFlip','camUse']) if($(id)) $(id).disabled=busy;
+  for(const id of ['pickSlot','slotCam','slotUp','camSnap','camRecord','camFlip','camUse']) if($(id)) $(id).disabled=busy;
   if(busy&&$('qcard')&&!$('mediaProgress')){
     const n=document.createElement('div'); n.id='mediaProgress'; n.className='upnote'; n.textContent=label||'Uploading… 上傳中，請稍候'; $('qcard').appendChild(n);
   }
