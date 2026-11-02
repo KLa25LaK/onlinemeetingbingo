@@ -184,7 +184,6 @@ aside{width:360px;flex-shrink:0;display:flex;flex-direction:column;gap:14px;over
 .chip.on i{background:var(--ok)}
 .chip.you{background:var(--ink);color:#fff}
 .chip.up{box-shadow:0 0 0 2px var(--gold);font-weight:600;color:var(--ink);background:var(--gold-soft)}
-.chip .kick{border:none;background:none;color:#c62f33;font-weight:700;font-size:12px;padding:0 0 0 4px;margin:0;cursor:pointer;line-height:1}.chip.you .kick{color:#fff}
 .chip.you.up{background:var(--ink);color:#fff}
 .qcard.mine-up{box-shadow:0 0 0 4px var(--a),var(--shadow)}
 .upnote{margin-top:14px;padding:10px 12px;border-radius:12px;background:var(--gold-soft);font-size:14px;line-height:1.5;text-align:center}
@@ -311,7 +310,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <div id="setup">
   <div class="logo">
     <div class="logo-grid"><i class="on"></i><i></i><i></i><i class="on2"></i><i></i><i class="on"></i><i class="on2"></i><i></i><i></i><i class="on2"></i><i class="on"></i><i></i><i class="on2"></i><i></i><i></i><i class="on"></i></div>
-    <div><h1>Bingo 16</h1><div class="build-tag">test 57</div></div>
+    <div><h1>Bingo 16</h1><div class="build-tag">test 60</div></div>
   </div>
   <p class="sub">Enter your name and the room code from your teacher. <span class="zh">輸入你的名字和老師給的房間代碼。</span></p>
 
@@ -367,7 +366,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
     <div class="tb" id="tThem"></div>
     <span class="turn" id="turn"></span>
     <div class="status wait" id="status" style="margin-left:0"><span class="led"></span><span id="statusTxt">Connecting…</span></div>
-    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 57</small>
+    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 60</small>
     <button class="btn ghost sm" id="downloadMoments">↓ Our Moments 下載成果</button>
     <button class="btn ghost sm" id="exitBtn">Exit</button>
   </header>
@@ -381,8 +380,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
         2. The question pops up for everyone — but in a different spot on each team's board. <span class="zh">題目會同時跳出，但兩隊的位置不一樣！</span><br>
         3. Anyone on each team can upload one answer (📸). <span class="zh">每隊任何人都可上傳；點已完成格子可更換本隊作品。</span><br>
         4. Both teams' answers in → square done → next pick. <span class="zh">兩隊都上傳，這格才完成，才能翻下一格。</span><br>
-        5. 4 in a row = <b>BINGO!</b><br>
-        6. 👑 The room captain can tap ✕ to remove any player (e.g. someone offline). <span class="zh">每間房間一位隊長（最早加入且在線的人），可以按 ✕ 移出兩隊任何成員，例如離線的人。</span>
+        5. 4 in a row = <b>BINGO!</b>
       </div>
     </aside>
   </main>
@@ -435,7 +433,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <!-- ================= TEACHER CONSOLE ================= -->
 <div id="teacher" class="hidden">
   <header class="t-head">
-    <small class="build-tag">test 57</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
+    <small class="build-tag">test 60</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
     <div class="tabs"><button class="tab on" data-tab="setup">Setup 設定</button><button class="tab" data-tab="live">Live 監控</button></div>
     <div class="status wait" id="tStatus" style="margin-left:auto"><span class="led"></span><span id="tStatusTxt">Offline</span></div>
     <a class="btn ghost sm" href="#" id="tExit" style="text-decoration:none">Student page 學生頁</a>
@@ -529,7 +527,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
         <button class="btn ghost sm del" id="delSel" disabled>✕ Delete selected 刪除選取的房間</button>
         <button class="btn ghost sm del" id="delAll">✕ Delete all rooms 刪除全部房間</button>
       </div>
-      <div class="hint">重置會清除翻開的格子、連線、照片和影片，並把房間裡的學生全部踢出（學生要重新輸入代碼加入）；房間代碼、房間名稱、隊名和題目都會保留。<br>刪除會把房間整個移除（代碼失效），活動代碼和題目保留，之後可以再新增房間。</div>
+      <div class="hint">重置會清除翻開的格子、連線、照片和影片，並把房間裡的學生全部踢出（學生要重新輸入代碼加入）；房間代碼、房間名稱、隊名和題目都會保留。<br>要移出某個學生或整隊學生（例如離線不動的人），請點房間卡片，在房間詳細視窗裡操作。<br>刪除會把房間整個移除（代碼失效），活動代碼和題目保留，之後可以再新增房間。</div>
     </div>
     <div class="room-grid" id="roomGrid"></div>
   </section>
@@ -654,8 +652,6 @@ const isDoneIn=(st,qi)=>{const g=st.got[qi];return !!(g&&g.A&&g.B)};
 const curIn=st=>{const l=st.opened[st.opened.length-1];return (l!=null&&!isDoneIn(st,l))?l:null};
 const turnIn=st=>st.opened.length%2===0?'A':'B';
 const readyIn=st=>!!st.teams.B && SIDES.every(s=>st.members.some(m=>m.side===s&&m.online));
-// One captain per room = earliest-joined member who is online (falls back to earliest-joined), so an offline captain never blocks the room.
-const captainIn=st=>(st.members.find(m=>m.online)||st.members[0]||{}).id||null;
 const linesIn=(st,side)=>{const t=st.teams[side]; if(!t) return 0; return LINES.filter(l=>l.every(p=>isDoneIn(st,t.order[p]))).length;};
 
 
@@ -805,7 +801,7 @@ function onState(st){
   ST=st;
   if(!me()){
     if(pm&&prev&&(st.resetAt||0)!==(prev.resetAt||0)){ leaveAfterReset(st); return; }
-    if(pm) toast('You were removed by the captain. Choose a team to join again · 你已被隊長移出，請重新選擇隊伍'); showLobby(); return; }
+    if(pm) toast('Your teacher removed you from the team. Choose a team to join again · 老師已把你移出隊伍，請重新選擇隊伍'); showLobby(); return; }
   $('lobbyModal').classList.add('hidden');
   if(pm && pm.side===me().side) effects(prev,ST);
   else if(pm) toast(`Your teacher moved you to ${tn(me().side)} · 老師把你移到 ${tn(me().side)}`,'gold');
@@ -866,14 +862,6 @@ async function act(m){
       if(previousKey!==key)await B.remove(R(room)+'/photos/'+previousKey);
     }catch(e){console.warn('Previous media cleanup failed',e);}
 
-  }
-  else if(m.type==='kick'){
-    const on={...ON};
-    ok=await txnRoom(CODE,st=>{ withOnline(st,on); const x=st.members.find(y=>y.id===MYID), t=st.members.find(y=>y.id===m.id);
-      if(!x||!t||t.id===MYID) return fail('');
-      if(captainIn(st)!==MYID) return fail('Only the captain can remove players · 只有隊長可以移出成員');
-      st.members=st.members.filter(y=>y.id!==t.id); st.members.forEach(y=>delete y.online); return st; });
-    if(ok) toast('Removed · 已移出隊伍','gold');
   }
   else if(m.type==='takeover'){
     const on={...ON}, side=me().side;
@@ -944,8 +932,6 @@ function showReveal(qi){
   $('rvMe').classList.add('hidden');
   $('revealModal').classList.remove('hidden');
 }
-$('game').querySelector('header').addEventListener('click',e=>{ const b=e.target.closest('[data-kick]'); if(!b) return; const m=mem(b.dataset.kick); if(!m) return;
-  if(!confirm(`Remove ${m.name} (${tn(m.side)}) from the room?${m.online?'':' (offline)'}\n把 ${m.name}（${tn(m.side)}）移出房間？${m.online?'':'（目前離線）'}\n他之後可以重新加入。`)) return; act({type:'kick',id:m.id}); });
 $('rvOk').onclick=()=>{ $('revealModal').classList.add('hidden'); const c=current(); if(c!=null) flashCell(c); };
 
 /* ======================= RENDER ======================= */
@@ -953,9 +939,8 @@ function teamBlock(side,cls){
   const t=ST.teams[side];
   if(!t) return `<div class="team"><span class="dot" style="background:var(--b)"></span>Waiting… <span class="zh" style="font-size:14px;color:var(--muted)">等待另一隊加入</span></div>`;
   const cur=current(), up=cur!=null?ST.got[cur]?.[side]:null;
-  const cap=captainIn(ST), iCap=cap===MYID;
   const chips=ST.members.filter(m=>m.side===side).map(m=>
-    `<span class="chip ${m.online?'on':''} ${m.id===MYID?'you':''} ${m.id===up?'up':''}"><i></i>${m.id===cap?'👑 ':''}${m.id===up?'📸 ':''}${esc(m.name)}${m.id===MYID?' (you)':''}${iCap&&m.id!==MYID?`<button class="kick" data-kick="${esc(m.id)}" title="Remove from room 移出房間">✕</button>`:''}</span>`).join('');
+    `<span class="chip ${m.online?'on':''} ${m.id===MYID?'you':''} ${m.id===up?'up':''}"><i></i>${m.id===up?'📸 ':''}${esc(m.name)}${m.id===MYID?' (you)':''}</span>`).join('');
   return `<div class="team"><span class="dot" style="background:var(--${cls==='me'?'a':'b'})"></span>${esc(t.name)}<span class="score ${cls}">${t.lines} line${t.lines===1?'':'s'}</span></div><div class="mem">${chips}</div>`;
 }
 function render(){
@@ -1546,10 +1531,12 @@ function renderRoomModal(){
   if($('rmBody').contains(document.activeElement) && document.activeElement.tagName==='SELECT') return; // don't yank a menu the teacher is using
   const reassign=cur==null?'':'<div class="hint">每隊任一位隊員都可以上傳，無需指定上傳者；同隊可繼續更換作品，完成狀態與進度保留。</div>';
   const players=st.members.length?`<table class="mtable">${st.members.map(m=>`<tr>
-      <td><span class="chip ${m.online?'on':''}"><i></i>${captainIn(st)===m.id?'👑 ':''}${esc(m.name)}</span></td>
+      <td><span class="chip ${m.online?'on':''}"><i></i>${esc(m.name)}</span>${m.online?'':' <span class="hint" style="margin:0">offline 離線</span>'}</td>
       <td><span style="color:var(--${m.side==='A'?'a':'b'});font-weight:600">${esc(st.teams[m.side].name)}</span></td>
       <td style="text-align:right;white-space:nowrap"><button class="btn ghost sm" data-move="${m.id}">⇄ Move to ${esc(st.teams[other(m.side)].name)}</button>
-      <button class="btn ghost sm" data-remove="${m.id}">✕ Remove</button></td></tr>`).join('')}</table>`:'<div class="hint">No students yet · 還沒有學生加入</div>';
+      <button class="btn ghost sm" data-remove="${m.id}">✕ Remove 移出</button></td></tr>`).join('')}</table>
+    <div class="row" style="margin-top:10px;gap:8px">${SIDES.filter(s=>st.members.some(m=>m.side===s)).map(s=>`<button class="btn ghost sm del" data-rmteam="${s}">✕ Remove all ${esc(st.teams[s].name)} 移出${esc(st.teams[s].name)}全部成員（${st.members.filter(m=>m.side===s).length}）</button>`).join('')}
+      ${st.members.some(m=>!m.online)?`<button class="btn ghost sm del" data-rmoff="1">✕ Remove offline 移出所有離線成員（${st.members.filter(m=>!m.online).length}）</button>`:''}</div>`:'<div class="hint">No students yet · 還沒有學生加入</div>';
   const board=s=>{ const o=st.teams[s].order, ot=other(s);
     const win=new Set(LINES.filter(l=>l.every(p=>isDoneIn(st,o[p]))).flat());
     return o.map((qi,pos)=>{ const q=st.questions[qi];
@@ -1614,9 +1601,17 @@ $('rmBody').addEventListener('change',async e=>{
 $('rmBody').addEventListener('click',async e=>{
   const code=openRoomCode, r=ROOMS[code]; if(!r||!r.st) return; const on={...r.on};
   const mv=e.target.closest('[data-move]'), rm=e.target.closest('[data-remove]'), rs=e.target.closest('[data-reset]'), im=e.target.closest('[data-lbq]');
+  const rt=e.target.closest('[data-rmteam]'), ro=e.target.closest('[data-rmoff]');
+  if(rt||ro){
+    const pick=rt?(m=>m.side===rt.dataset.rmteam):(m=>!m.online), list=r.st.members.filter(pick); if(!list.length) return;
+    const what=rt?`${r.st.teams[rt.dataset.rmteam].name} 全部 ${list.length} 位成員`:`${list.length} 位離線成員`;
+    if(!confirm(`把 ${what} 移出 ${r.st.label}？\n${list.map(m=>m.name).join('、')}\n\n進度和照片保留，他們可以重新加入。`)) return;
+    const ids=new Set(list.map(m=>m.id));
+    await txnRoom(code,st=>{ const gone=st.members.filter(y=>ids.has(y.id)); if(!gone.length) return; st.members=st.members.filter(y=>!ids.has(y.id)); gone.forEach(x=>fixAssign(st,x.side,x.id,on)); return st; });
+    toast(`已移出 ${list.length} 位`,'gold'); return; }
   if(mv){ const id=mv.dataset.move;
     await txnRoom(code,st=>{ const m=st.members.find(x=>x.id===id); if(!m) return; const old=m.side; m.side=other(old); fixAssign(st,old,id,on); return st; }); }
-  else if(rm){ const m=rMember(r,rm.dataset.remove); if(!m||!confirm(`把 ${m.name} 移出這個房間？（他可以重新加入）`)) return;
+  else if(rm){ const m=rMember(r,rm.dataset.remove); if(!m||!confirm(`把 ${m.name}（${r.st.teams[m.side].name}${m.online?'':'，離線'}）移出這個房間？（他可以重新加入，進度和照片保留）`)) return;
     await txnRoom(code,st=>{ const x=st.members.find(y=>y.id===m.id); if(!x) return; st.members=st.members.filter(y=>y.id!==m.id); fixAssign(st,x.side,m.id,on); return st; }); }
   else if(rs){ if(!confirm(`重來 ${r.st.label}？所有翻開的格子、連線和照片都會清除，學生也會被踢出，要重新輸入代碼加入。`)) return;
     await resetRoom(code); }
