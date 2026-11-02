@@ -221,6 +221,10 @@ textarea.share{width:100%;min-height:150px;border:2px solid var(--line);border-r
 .stat{background:var(--card);border-radius:14px;padding:10px 16px;box-shadow:var(--shadow);font-size:14px;color:var(--muted)}
 .stat b{display:block;font-size:24px;color:var(--ink);line-height:1.1}
 .notice-bar{display:flex;gap:8px;flex:1;min-width:280px}
+.resetbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+.rsel{display:inline-flex;align-items:center;cursor:pointer;padding:2px}.rsel input{width:20px;height:20px;cursor:pointer;accent-color:var(--a)}
+.rcard.picked{border-color:var(--a)}
+.btn.del{color:#c62f33;border-color:#f3c9c9}
 .room-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;margin-top:16px}
 .rcard{background:var(--card);border-radius:18px;box-shadow:var(--shadow);padding:14px 16px;display:flex;flex-direction:column;gap:9px;border:3px solid transparent;cursor:pointer;transition:transform .1s}
 .rcard:hover{transform:translateY(-2px)}
@@ -306,7 +310,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <div id="setup">
   <div class="logo">
     <div class="logo-grid"><i class="on"></i><i></i><i></i><i class="on2"></i><i></i><i class="on"></i><i class="on2"></i><i></i><i></i><i class="on2"></i><i class="on"></i><i></i><i class="on2"></i><i></i><i></i><i class="on"></i></div>
-    <div><h1>Bingo 16</h1><div class="build-tag">test 53</div></div>
+    <div><h1>Bingo 16</h1><div class="build-tag">test 55</div></div>
   </div>
   <p class="sub">Enter your name and the room code from your teacher. <span class="zh">輸入你的名字和老師給的房間代碼。</span></p>
 
@@ -362,7 +366,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
     <div class="tb" id="tThem"></div>
     <span class="turn" id="turn"></span>
     <div class="status wait" id="status" style="margin-left:0"><span class="led"></span><span id="statusTxt">Connecting…</span></div>
-    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 53</small>
+    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 55</small>
     <button class="btn ghost sm" id="downloadMoments">↓ Our Moments 下載成果</button>
     <button class="btn ghost sm" id="exitBtn">Exit</button>
   </header>
@@ -429,7 +433,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <!-- ================= TEACHER CONSOLE ================= -->
 <div id="teacher" class="hidden">
   <header class="t-head">
-    <small class="build-tag">test 53</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
+    <small class="build-tag">test 55</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
     <div class="tabs"><button class="tab on" data-tab="setup">Setup 設定</button><button class="tab" data-tab="live">Live 監控</button></div>
     <div class="status wait" id="tStatus" style="margin-left:auto"><span class="led"></span><span id="tStatusTxt">Offline</span></div>
     <a class="btn ghost sm" href="#" id="tExit" style="text-decoration:none">Student page 學生頁</a>
@@ -514,6 +518,17 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
       <div class="row" style="align-items:center">
         <div class="notice-bar"><input class="inp" id="noticeAll" placeholder="Message to every room… 傳訊息給所有房間（例如：剩 5 分鐘！）" maxlength="120"><button class="btn" id="sendAll">📢 Send</button></div>
       </div>
+      <div class="resetbar">
+        <label class="check" style="margin:0"><input type="checkbox" id="selAll"> Select all 全選</label>
+        <button class="btn ghost sm" id="resetSel" disabled>↺ Reset selected 重置選取的房間</button>
+        <button class="btn ghost sm" id="resetAll">↺ Reset all rooms 重置全部房間</button>
+        <label class="check" style="margin:0"><input type="checkbox" id="resetKids"> Also remove students 同時清除學生名單</label>
+      </div>
+      <div class="resetbar" style="border-top:none;padding-top:0;margin-top:8px">
+        <button class="btn ghost sm del" id="delSel" disabled>✕ Delete selected 刪除選取的房間</button>
+        <button class="btn ghost sm del" id="delAll">✕ Delete all rooms 刪除全部房間</button>
+      </div>
+      <div class="hint">重置會清除翻開的格子、連線、照片和影片；房間代碼、房間名稱、隊名和題目都會保留。勾「同時清除學生名單」適合換下一班學生使用。<br>刪除會把房間整個移除（代碼失效），活動代碼和題目保留，之後可以再新增房間。</div>
     </div>
     <div class="room-grid" id="roomGrid"></div>
   </section>
@@ -1481,12 +1496,16 @@ function renderLive(){
   $('tSummary').innerHTML=`<div class="stat"><b>${rs.length}</b>rooms 房間</div><div class="stat"><b>${on}</b>online 在線學生</div>
     <div class="stat"><b>${infos.filter(i=>i.status==='play').length}</b>playing 進行中</div><div class="stat"><b>${infos.filter(i=>i.finished).length}</b>finished 完成</div>
     <div class="stat" style="${infos.some(i=>i.lvl)?'color:#c62f33':''}"><b>${infos.filter(i=>i.lvl).length}</b>need help 需要注意</div>`;
+  for(const c of [...selRooms]) if(!ROOMS[c]||!ROOMS[c].st) selRooms.delete(c);
+  $('resetSel').disabled=!selRooms.size; $('resetSel').textContent=`↺ Reset selected 重置選取的房間${selRooms.size?`（${selRooms.size}）`:''}`;
+  $('selAll').checked=rs.length>0&&selRooms.size===rs.length; $('resetAll').disabled=!rs.length;
+  $('delSel').disabled=!selRooms.size; $('delSel').textContent=`✕ Delete selected 刪除選取的房間${selRooms.size?`（${selRooms.size}）`:''}`; $('delAll').disabled=!rs.length;
   if(!rs.length){ $('roomGrid').innerHTML='<div class="empty" style="grid-column:1/-1">還沒有房間，請到「Setup 設定」新增。</div>'; return; }
   $('roomGrid').innerHTML=rs.map((r,i)=>{ const st=r.st, info=infos[i];
     const pill={done:['done','Finished 完成'],play:['play','Playing 進行中'],wait:['wait','Waiting 等待中']}[info.status];
     const thumbs=st.opened.filter(q=>isDoneIn(st,q)).slice(-3).reverse().flatMap(q=>SIDES.map(s=>purl(r,q+':'+s))).filter(Boolean).slice(0,6);
-    return `<div class="rcard ${info.lvl}" data-code="${r.code}">
-      <div class="rc-top"><span class="lbl2">${esc(st.label)}</span><span class="cd">${r.code}</span><span class="spill ${pill[0]}">${pill[1]}</span></div>
+    return `<div class="rcard ${info.lvl} ${selRooms.has(r.code)?'picked':''}" data-code="${r.code}">
+      <div class="rc-top"><label class="rsel" title="Select 勾選"><input type="checkbox" data-sel="${r.code}" ${selRooms.has(r.code)?'checked':''}></label><span class="lbl2">${esc(st.label)}</span><span class="cd">${r.code}</span><span class="spill ${pill[0]}">${pill[1]}</span></div>
       <div class="row" style="gap:6px"><button class="btn ghost sm" data-watch="${r.code}">👀 Watch 觀看</button><span class="hint" style="margin:0;align-self:center">點卡片看詳細・管理</span></div>
       ${SIDES.map(s=>`<div class="rc-team"><span class="dot" style="background:var(--${s==='A'?'a':'b'})"></span><span class="tnm">${esc(st.teams[s].name)}</span>
         <span class="ln" style="background:var(--${s==='A'?'a':'b'}-soft)">${st.teams[s].lines} line${st.teams[s].lines===1?'':'s'}</span>${chipsFor(st,s,info.cur)}</div>`).join('')}
@@ -1495,7 +1514,8 @@ function renderLive(){
       ${thumbs.length?`<div class="rc-thumbs">${thumbs.map(t=>`${mediaHTML(t,`alt=""`,false)}`).join('')}</div>`:''}
     </div>`; }).join('');
 }
-$('roomGrid').addEventListener('click',e=>{ const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
+$('roomGrid').addEventListener('change',e=>{ const s=e.target.closest('[data-sel]'); if(!s) return; s.checked?selRooms.add(s.dataset.sel):selRooms.delete(s.dataset.sel); renderLive(); });
+$('roomGrid').addEventListener('click',e=>{ if(e.target.closest('.rsel')) return; const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
 async function sendNotice(codes,text){ text=text.trim(); if(!text||!codes.length) return;
   await Promise.all(codes.map(c=>B.set(R(c)+'/notice',{id:newId(),text,t:B.now()})));
   toast(`📢 Sent to ${codes.length} room${codes.length>1?'s':''} · 已送出`,'gold'); }
@@ -1530,6 +1550,40 @@ function renderRoomModal(){
     <div class="row" style="margin-top:18px"><button class="btn ghost sm" data-reset="1">↺ Reset this room 重來（清除進度與照片）</button></div>`;
 }
 function closeRoomModal(){ openRoomCode=null; $('roomModal').classList.add('hidden'); }
+// Clear a room's progress and media. Code, room name, team names and board layouts stay; questions follow the event's current set.
+async function resetRoom(code,clearStudents){
+  const ok=await txnRoom(code,st=>{ st.opened=[]; st.who={}; st.got={}; st.mediaKeys={}; st.rot={A:0,B:0}; st.openedAt={};
+    SIDES.forEach(s=>{ if(st.teams[s]) st.teams[s].lines=0; }); st.questions=clone(EV.questions); if(clearStudents) st.members=[]; return st; });
+  await B.remove(R(code)+'/photos');
+  return ok;
+}
+const selRooms=new Set();
+async function resetRooms(codes){
+  codes=codes.filter(c=>ROOMS[c]&&ROOMS[c].st); if(!codes.length) return toast('請先勾選房間');
+  const kids=$('resetKids').checked, names=codes.map(c=>ROOMS[c].st.label).join('、');
+  if(!confirm(`重置 ${codes.length} 間房間？\n${names}\n\n翻開的格子、連線、照片和影片都會清除，無法復原。${kids?'\n學生名單也會清除，學生要重新選隊。':'\n學生名單保留。'}`)) return;
+  ['resetSel','resetAll'].forEach(id=>$(id).disabled=true);
+  let n=0; for(const c of codes){ try{ await resetRoom(c,kids); n++; selRooms.delete(c); }catch(e){ console.warn('reset failed',c,e); } }
+  toast(n===codes.length?`↺ 已重置 ${n} 間房間`:`已重置 ${n} / ${codes.length} 間，請確認連線後再試`, n===codes.length?'gold':'');
+  $('resetAll').disabled=false; renderLive();
+}
+async function deleteRooms(codes){
+  codes=codes.filter(c=>ROOMS[c]&&ROOMS[c].st); if(!codes.length) return toast('請先勾選房間');
+  const names=codes.map(c=>`${ROOMS[c].st.label}（${c}）`).join('、'), kids=codes.some(c=>ROOMS[c].st.members.length);
+  if(!confirm(`刪除 ${codes.length} 間房間？\n${names}\n\n房間、進度、照片和影片都會刪除，房間代碼會失效，無法復原。${kids?'\n其中有房間已經有學生。':''}`)) return;
+  ['delSel','delAll'].forEach(id=>$(id).disabled=true);
+  let n=0;
+  try{ await txnEvent(ev=>{ codes.forEach(c=>delete ev.codes[c]); return ev; });
+    for(const c of codes){ try{ await B.remove(R(c)); n++; selRooms.delete(c); }catch(e){ console.warn('delete failed',c,e); } } }
+  catch(e){ console.warn(e); }
+  toast(n===codes.length?`✕ 已刪除 ${n} 間房間`:`已刪除 ${n} / ${codes.length} 間，請確認連線後再試`, n===codes.length?'gold':'');
+  $('delAll').disabled=false; renderLive();
+}
+$('delSel').onclick=()=>deleteRooms([...selRooms]);
+$('delAll').onclick=()=>deleteRooms(evCodes());
+$('resetSel').onclick=()=>resetRooms([...selRooms]);
+$('resetAll').onclick=()=>resetRooms(evCodes());
+$('selAll').onchange=e=>{ selRooms.clear(); if(e.target.checked) evCodes().forEach(c=>selRooms.add(c)); renderLive(); };
 $('rmClose').onclick=closeRoomModal;
 $('roomModal').addEventListener('click',e=>{ if(e.target.id==='roomModal') closeRoomModal(); });
 $('rmSend').onclick=()=>{ if(openRoomCode){ sendNotice([openRoomCode],$('rmNotice').value); $('rmNotice').value=''; } };
@@ -1549,8 +1603,7 @@ $('rmBody').addEventListener('click',async e=>{
   else if(rm){ const m=rMember(r,rm.dataset.remove); if(!m||!confirm(`把 ${m.name} 移出這個房間？（他可以重新加入）`)) return;
     await txnRoom(code,st=>{ const x=st.members.find(y=>y.id===m.id); if(!x) return; st.members=st.members.filter(y=>y.id!==m.id); fixAssign(st,x.side,m.id,on); return st; }); }
   else if(rs){ if(!confirm(`重來 ${r.st.label}？所有翻開的格子、連線和照片都會清除（學生保留）。`)) return;
-    await txnRoom(code,st=>{ st.opened=[]; st.who={}; st.got={}; st.mediaKeys={}; st.rot={A:0,B:0}; st.openedAt={}; SIDES.forEach(s=>st.teams[s].lines=0); st.questions=clone(EV.questions); return st; });
-    await B.remove(R(code)+'/photos'); }
+    await resetRoom(code,false); }
   else if(im){ $('lbActions').innerHTML=''; const qi=+im.dataset.lbq, st=r.st, q=st.questions[qi];
     $('lbQ').textContent=q.en; $('lbQzh').textContent=q.zh||'';
     $('lbGrid').innerHTML=SIDES.map(s=>{ const src=purl(r,qi+':'+s), who=(rMember(r,st.got[qi][s])||{}).name||'';
