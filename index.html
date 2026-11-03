@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Bingo 16</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Fredoka:wght@400;500;600;700&family=Mochiy+Pop+One&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Fredoka:wght@400;500;600;700&family=Mochiy+Pop+One&family=Noto+Sans+KR:wght@700;900&family=Noto+Sans+TC:wght@400;500;700;900&display=swap" rel="stylesheet">
 <script async src="https://cdn.jsdelivr.net/npm/mp4-muxer@5.1.3/build/mp4-muxer.js"></script>
 <style>
 :root{
@@ -310,7 +310,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <div id="setup">
   <div class="logo">
     <div class="logo-grid"><i class="on"></i><i></i><i></i><i class="on2"></i><i></i><i class="on"></i><i class="on2"></i><i></i><i></i><i class="on2"></i><i class="on"></i><i></i><i class="on2"></i><i></i><i></i><i class="on"></i></div>
-    <div><h1>Bingo 16</h1><div class="build-tag">test 60</div></div>
+    <div><h1>Bingo 16</h1><div class="build-tag">test 63</div></div>
   </div>
   <p class="sub">Enter your name and the room code from your teacher. <span class="zh">輸入你的名字和老師給的房間代碼。</span></p>
 
@@ -366,8 +366,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
     <div class="tb" id="tThem"></div>
     <span class="turn" id="turn"></span>
     <div class="status wait" id="status" style="margin-left:0"><span class="led"></span><span id="statusTxt">Connecting…</span></div>
-    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 60</small>
-    <button class="btn ghost sm" id="downloadMoments">↓ Our Moments 下載成果</button>
+    <span class="code" id="hCode" title="Room code"></span><small class="build-tag">test 63</small>
     <button class="btn ghost sm" id="exitBtn">Exit</button>
   </header>
   <main>
@@ -380,7 +379,8 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
         2. The question pops up for everyone — but in a different spot on each team's board. <span class="zh">題目會同時跳出，但兩隊的位置不一樣！</span><br>
         3. Anyone on each team can upload one answer (📸). <span class="zh">每隊任何人都可上傳；點已完成格子可更換本隊作品。</span><br>
         4. Both teams' answers in → square done → next pick. <span class="zh">兩隊都上傳，這格才完成，才能翻下一格。</span><br>
-        5. 4 in a row = <b>BINGO!</b>
+        5. 4 in a row = <b>BINGO!</b><br>
+        📷 Want to keep a memory? Take a screenshot. <span class="zh">想留念可以直接截圖。</span>
       </div>
     </aside>
   </main>
@@ -433,7 +433,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 <!-- ================= TEACHER CONSOLE ================= -->
 <div id="teacher" class="hidden">
   <header class="t-head">
-    <small class="build-tag">test 60</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
+    <small class="build-tag">test 63</small><div class="team">🧑‍🏫 Teacher console <span class="zh" style="font-size:15px;color:var(--muted)">老師後台</span></div>
     <div class="tabs"><button class="tab on" data-tab="setup">Setup 設定</button><button class="tab" data-tab="live">Live 監控</button></div>
     <div class="status wait" id="tStatus" style="margin-left:auto"><span class="led"></span><span id="tStatusTxt">Offline</span></div>
     <a class="btn ghost sm" href="#" id="tExit" style="text-decoration:none">Student page 學生頁</a>
@@ -547,7 +547,7 @@ code{background:#f3ece1;padding:1px 5px;border-radius:5px;font-size:13px}
 
 <div class="modal hidden" id="momentsModal"><div class="modal-box">
   <div class="row" style="align-items:center"><h2 id="momentsTitle" class="grow" style="margin:0">Our Moments</h2><button class="btn ghost sm" id="momentsClose">Close 關閉</button></div>
-  <p class="hint" id="momentsSummary"></p>
+  <p class="hint" id="momentsSummary"></p><label class="f" id="momentsSideBox" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">影片盤面排列 Board layout <select id="momentsSide" style="font:inherit;padding:8px;border:2px solid var(--line);border-radius:10px"></select><span class="hint" style="margin:0">兩隊的格子位置不同，選要用哪一隊的。</span></label>
   <div class="music-controls"><label for="momentsMusic">Background music 背景音樂</label><select id="momentsMusic"><option value="">None 不加音樂</option><option value="Bell Song">Bell Song</option><option value="Bucket List">Bucket List</option><option value="Fun Cute">Fun Cute</option><option value="Purple Planet">Purple Planet</option><option value="Sugar Cookie">Sugar Cookie</option><option value="TaDa">TaDa</option><option value="Yummy Flavor">Yummy Flavor</option></select><label for="momentsMusicVolume">配樂音量 <span id="momentsMusicLevel">18%</span></label><input id="momentsMusicVolume" type="range" min="0" max="40" value="18"><audio id="momentsMusicPreview" controls preload="none" class="hidden"></audio><small>可先試聽。短片原音保留，播放短片時配樂會自動降低。</small></div>
   <div class="row"><button class="btn a" id="momentsHTML">↓ 成果網頁 Offline album</button><button class="btn b" id="momentsMovie">↓ 紀念影片 Make a video</button><button class="btn ghost hidden" id="momentsCancel">Cancel 取消合成</button></div>
   <p class="hint" id="momentsStatus" role="status"></p>
@@ -1507,7 +1507,7 @@ function renderLive(){
     const thumbs=st.opened.filter(q=>isDoneIn(st,q)).slice(-3).reverse().flatMap(q=>SIDES.map(s=>purl(r,q+':'+s))).filter(Boolean).slice(0,6);
     return `<div class="rcard ${info.lvl} ${selRooms.has(r.code)?'picked':''}" data-code="${r.code}">
       <div class="rc-top"><label class="rsel" title="Select 勾選"><input type="checkbox" data-sel="${r.code}" ${selRooms.has(r.code)?'checked':''}></label><span class="lbl2">${esc(st.label)}</span><span class="cd">${r.code}</span><span class="spill ${pill[0]}">${pill[1]}</span></div>
-      <div class="row" style="gap:6px"><button class="btn ghost sm" data-watch="${r.code}">👀 Watch 觀看</button><span class="hint" style="margin:0;align-self:center">點卡片看詳細・管理</span></div>
+      <div class="row" style="gap:6px"><button class="btn ghost sm" data-watch="${r.code}">👀 Watch 觀看</button><button class="btn ghost sm" data-moments="${r.code}">🎬 Moments 成果</button><span class="hint" style="margin:0;align-self:center">點卡片看詳細・管理</span></div>
       ${SIDES.map(s=>`<div class="rc-team"><span class="dot" style="background:var(--${s==='A'?'a':'b'})"></span><span class="tnm">${esc(st.teams[s].name)}</span>
         <span class="ln" style="background:var(--${s==='A'?'a':'b'}-soft)">${st.teams[s].lines} line${st.teams[s].lines===1?'':'s'}</span>${chipsFor(st,s,info.cur)}</div>`).join('')}
       <div><div class="prog"><i style="width:${info.done/16*100}%"></i></div><div class="hint" style="margin-top:4px">${info.done}/16 squares done · 完成 ${info.done} 格</div></div>
@@ -1516,7 +1516,9 @@ function renderLive(){
     </div>`; }).join('');
 }
 $('roomGrid').addEventListener('change',e=>{ const s=e.target.closest('[data-sel]'); if(!s) return; s.checked?selRooms.add(s.dataset.sel):selRooms.delete(s.dataset.sel); renderLive(); });
-$('roomGrid').addEventListener('click',e=>{ if(e.target.closest('.rsel')) return; const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
+$('roomGrid').addEventListener('click',e=>{ if(e.target.closest('.rsel')) return;
+  const mo=e.target.closest('[data-moments]'); if(mo){ e.stopPropagation(); const r=ROOMS[mo.dataset.moments]; if(r&&r.st) showMoments(r.st,r.photos,'A'); return; }
+  const w=e.target.closest('[data-watch]'); if(w){ e.stopPropagation(); window.open(watchURL(w.dataset.watch),'_blank'); return; } const c=e.target.closest('.rcard'); if(c){ openRoomCode=c.dataset.code; $('rmNotice').value=''; renderRoomModal(); $('roomModal').classList.remove('hidden'); } });
 async function sendNotice(codes,text){ text=text.trim(); if(!text||!codes.length) return;
   await Promise.all(codes.map(c=>B.set(R(c)+'/notice',{id:newId(),text,t:B.now()})));
   toast(`📢 Sent to ${codes.length} room${codes.length>1?'s':''} · 已送出`,'gold'); }
@@ -1527,7 +1529,7 @@ $('noticeAll').addEventListener('keydown',e=>{ if(e.key==='Enter') $('sendAll').
 function renderRoomModal(){
   const r=ROOMS[openRoomCode]; if(!r||!r.st){ closeRoomModal(); return; }
   const st=r.st, info=roomInfo(r), cur=info.cur;
-  $('rmTitle').innerHTML=`<button class="btn ghost sm" onclick="openTeacherMoments()">↓ 下載成果</button> ${esc(st.label)} <span class="code" style="font-size:15px">${r.code}</span> <button class="btn a sm" onclick="window.open(watchURL('${r.code}'),'_blank')">👀 Watch this room 觀看模式</button>`;
+  $('rmTitle').innerHTML=`<button class="btn ghost sm" onclick="openTeacherMoments()">🎬 Moments 成果（相簿・影片）</button> ${esc(st.label)} <span class="code" style="font-size:15px">${r.code}</span> <button class="btn a sm" onclick="window.open(watchURL('${r.code}'),'_blank')">👀 Watch this room 觀看模式</button>`;
   if($('rmBody').contains(document.activeElement) && document.activeElement.tagName==='SELECT') return; // don't yank a menu the teacher is using
   const reassign=cur==null?'':'<div class="hint">每隊任一位隊員都可以上傳，無需指定上傳者；同隊可繼續更換作品，完成狀態與進度保留。</div>';
   const players=st.members.length?`<table class="mtable">${st.members.map(m=>`<tr>
@@ -1849,7 +1851,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
   const W=1280,H=720,FPS=30;
   const C={bg:'#17151F',card:'#221F2D',ink:'#FFF4FA',muted:'#BDB7CC',dim:'#4A4560',pink:'#FF3E8E',lemon:'#FFE03D',sky:'#1FB6F0',mint:'#3BD6A6',night:'#1C1A24',back:'#2B2740'};
   const TEAM={A:C.pink,B:C.sky};
-  const FZ='"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif',FP='"Dela Gothic One","Noto Sans TC",system-ui,sans-serif',FC='"Mochiy Pop One","Noto Sans TC",system-ui,sans-serif';
+  const FZ='"Noto Sans TC","Noto Sans KR","PingFang TC","Apple SD Gothic Neo","Malgun Gothic","Microsoft JhengHei",system-ui,sans-serif',FP='"Dela Gothic One","Noto Sans TC",system-ui,sans-serif',FC='"Mochiy Pop One","Noto Sans TC",system-ui,sans-serif';
   const G={x:44,y:44,s:632},GAP=10,CS=(632-3*GAP)/4,X=726,MW=508;
   const ZIN=.6,ZOUT=.55,INTRO=3.6,PHOTO_HOLD=3.4,MAX_CLIP=10,SNAP_FPS=8;
   const LINE_COLORS=['#FFE03D','#3BD6A6','#FF8A3D','#B58CFF','#FFFFFF','#FF3E8E','#1FB6F0','#C6F432','#FFB3D1','#7FE3FF'];
@@ -1872,6 +1874,13 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
   const done=qi=>{const r=rowByQi.get(qi);return !!(r&&r.answers.A&&r.answers.B);};
   const doneCount=order.filter(done).length;
   const winLines=LINES.filter(l=>l.every(p=>done(order[p])));
+  const other=side==='A'?'B':'A';
+  let order2=bundle.orders&&Array.isArray(bundle.orders[other])&&bundle.orders[other].length===16?bundle.orders[other].slice():null;
+  const winLines2=order2?LINES.filter(l=>l.every(p=>done(order2[p]))):[];
+  const people={A:[],B:[]};{const add=(s,n)=>{n=String(n||'').trim();if(n&&!people[s].includes(n))people[s].push(n);};
+    ['A','B'].forEach(s=>((bundle.people&&bundle.people[s])||[]).forEach(n=>add(s,n)));
+    rows.forEach(r=>['A','B'].forEach(s=>r.answers[s]&&add(s,r.answers[s].name)));}
+  const hasPeople=people.A.length+people.B.length>0;
   const teamLines=bundle.lines||{};
   const teams=bundle.teams||{A:'Team A',B:'Team B'};
 
@@ -1882,7 +1891,8 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
   const rr=(x,y,w,h,r)=>{r=Math.max(0,Math.min(r,w/2,h/2));ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();};
   let dotPat=null;
   const dots=()=>{if(!dotPat){const c=mkCanvas(16,16),g=c.getContext('2d');g.fillStyle='rgba(255,62,142,.22)';g.beginPath();g.arc(8,8,2.3,0,Math.PI*2);g.fill();dotPat=ctx.createPattern(c,'repeat');}return dotPat;};
-  const cellRect=p=>({x:G.x+(p%4)*(CS+GAP),y:G.y+Math.floor(p/4)*(CS+GAP),w:CS,h:CS});
+  const rectIn=(b,p)=>{const g=b.s*GAP/632,c=(b.s-3*g)/4;return {x:b.x+(p%4)*(c+g),y:b.y+Math.floor(p/4)*(c+g),w:c,h:c};};
+  const cellRect=p=>rectIn(G,p);
   // CJK by character, Latin by word; punctuation never starts a line.
   const NO_START='。，、．,.」』）)！？!?ー・：；～…';
   const wrap=(text,maxW)=>{const toks=String(text||'').match(/[⺀-鿿豈-﫿＀-￯　-〿]|[^\s⺀-鿿豈-﫿＀-￯　-〿]+|\s+/g)||[];
@@ -1940,7 +1950,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
     for(const r of rows)for(const s of ['A','B'])if(r.answers[s]){check();r.answers[s]=Object.assign({},r.answers[s]);await prepare(r.answers[s]);say(`載入作品 ${++n}/${total}…`);}
     if(document.fonts&&document.fonts.load){
       const sample=rows.map(r=>r.en+r.zh).join('')+teams.A+teams.B+(bundle.label||'')+'一起完成的賓果回憶照片影片完成格條線謝謝你成為我們的交流夥伴！0123456789';
-      await Promise.race([Promise.all([document.fonts.load(`900 40px "Noto Sans TC"`,sample),document.fonts.load(`700 40px "Noto Sans TC"`,sample),document.fonts.load(`500 40px "Noto Sans TC"`,sample),
+      await Promise.race([Promise.all([document.fonts.load(`900 40px "Noto Sans TC"`,sample),document.fonts.load(`700 40px "Noto Sans TC"`,sample),document.fonts.load(`500 40px "Noto Sans TC"`,sample),document.fonts.load(`700 40px "Noto Sans KR"`,(bundle.schools||'')+teams.A+teams.B),
         document.fonts.load(`400 40px "Dela Gothic One"`,'Our Bingo16MomentsBINGO!0123456789/.MOMENT'),document.fonts.load(`400 40px "Mochiy Pop One"`,'Made together!♡EXCHANGESPECIALGREAT TEAMWORK'+teams.A+teams.B)]).catch(()=>{}),wait(3500)]);
     }
 
@@ -1956,6 +1966,11 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
     const STAMP0=.3,STAMP_STEP=Math.min(.12,1.6/Math.max(1,doneCount)),LINE0=STAMP0+doneCount*STAMP_STEP+.35,LINE_STEP=.42,
       CONF_T=LINE0+winLines.length*LINE_STEP+.25,OUTRO=CONF_T+4.2;
     push({kind:'outro',dur:OUTRO});
+    // Both teams' boards side by side: same answers, different squares.
+    const CMP_FLY0=1.1,CMP_STEP=Math.min(.14,2.2/Math.max(1,rows.length)),CMP_LINE0=CMP_FLY0+rows.length*CMP_STEP+.85;
+    if(order2)push({kind:'compare',dur:CMP_LINE0+Math.max(winLines.length,winLines2.length)*LINE_STEP+2.4});
+    const CRED_STEP=Math.min(.12,1.8/Math.max(1,people.A.length+people.B.length));
+    if(hasPeople)push({kind:'credits',dur:Math.max(5.5,1.4+(people.A.length+people.B.length)*CRED_STEP+3.2)});
     const TOTAL=T;
 
     /* ---------- drawing ---------- */
@@ -1986,7 +2001,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       ctx.fillStyle=C.night;ctx.font=`400 ${r*.22}px ${FC}`;ctx.fillText('NICE!',0,r*.36);ctx.restore();};
     // o: {live:{A?,B?}, snap:frame#, z, px, py, focus:0..1, active:'A'|'B'|null, stamp}
     const drawCell=(p,r,o={})=>{
-      const qi=order[p],row=rowByQi.get(qi),rad=Math.max(10,r.w*.08),sh=Math.max(3,r.w*.022);
+      const qi=(o.ord||order)[p],row=rowByQi.get(qi),rad=Math.max(10,r.w*.08),sh=Math.max(3,r.w*.022);
       const edge=row?C.ink:C.dim;
       ctx.fillStyle=row?C.ink:'#0E0C14';rr(r.x+sh,r.y+sh,r.w,r.h,rad);ctx.fill();
       ctx.save();rr(r.x,r.y,r.w,r.h,rad);ctx.clip();
@@ -2034,7 +2049,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       ctx.lineWidth=3;ctx.strokeStyle=C.ink;ctx.strokeRect(0,0,w,h);ctx.fillStyle='#fff';ctx.textBaseline='middle';ctx.textAlign='left';ctx.fillText(text,size*.55,h/2+1,w-size*1.1);ctx.restore();};
     const topLine=()=>{ctx.textBaseline='middle';ctx.textAlign='left';ctx.font=`400 18px ${FP}`;const pw=ctx.measureText('BINGO 16').width+24;
       ctx.fillStyle=C.ink;rr(X,52,pw,30,15);ctx.fill();ctx.fillStyle=C.night;ctx.fillText('BINGO 16',X+12,68);
-      const t=(bundle.label||'')+(bundle.date?'  ·  '+bundle.date:'');let fs=20;ctx.font=`700 ${fs}px ${FZ}`;
+      const t=bundle.schools||((bundle.label||'')+(bundle.date?'  ·  '+bundle.date:''));let fs=20;ctx.font=`700 ${fs}px ${FZ}`;
       while(fs>12&&ctx.measureText(t).width>1240-(X+pw+12)){fs--;ctx.font=`700 ${fs}px ${FZ}`;}
       ctx.fillStyle=C.ink;ctx.fillText(t,X+pw+12,68);ctx.textBaseline='top';};
     const arcText=(text,r,bottom)=>{const gap=1.2,chars=[...text],ws=chars.map(c=>ctx.measureText(c).width),tot=(ws.reduce((a,b)=>a+b,0)+gap*(chars.length-1))/r;
@@ -2065,6 +2080,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       strip(shorten(teams.A,12)+' × '+shorten(teams.B,12),X+4,322,28,-.035,350);
       ctx.fillStyle=C.ink;ctx.font=`900 31px ${FZ}`;ctx.textBaseline='top';ctx.fillText('Our shared memories',X,400);
       ctx.fillStyle=C.muted;ctx.font=`700 22px ${FZ}`;ctx.fillText(`${rows.length} questions · ${bundle.count||0} photos & clips`,X,458);
+      if(bundle.schools){ctx.font=`700 18px ${FZ}`;ctx.fillText((bundle.label||'')+(bundle.date?'  ·  '+bundle.date:''),X,492);}
       bubble('Made together!',X,566,(lt-1.4)/.4);postmark(1166,420,74,(lt-.9)/.45);sticker(1112,572,54,(lt-1.15)/.45,'♡ EXCHANGE ♡','SPECIAL');ctx.restore();};
     const drawPanelOutro=(a,lt)=>{ctx.save();ctx.globalAlpha=a;ctx.textAlign='left';ctx.textBaseline='top';topLine();
       popText(winLines.length?'BINGO!':'WELL DONE!',X,108,winLines.length?100:80,C.pink);
@@ -2073,6 +2089,7 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       let y=372;for(const s of ['A','B']){const n=teamLines[s];teamRow(s,y,26,Number.isFinite(n)?`${n} LINE${n===1?'':'S'}`:'');y+=42;}
       ctx.fillStyle=C.muted;ctx.font=`700 22px ${FZ}`;ctx.fillText('Different places. Shared memories.',X,468);
       ctx.font=`700 20px ${FZ}`;ctx.fillText('Thank you for being our exchange partner!',X,500);
+      if(bundle.schools){ctx.font=`700 17px ${FZ}`;ctx.fillStyle=C.dim==='#4A4560'?'#8A8597':C.muted;ctx.fillText((bundle.label||'')+(bundle.date?'  ·  '+bundle.date:''),X,536);}
       bubble('See you again!',X,572,(lt-.6)/.4);sticker(1130,600,54,(lt-CONF_T-.2)/.45,'♡ EXCHANGE ♡','SPECIAL');ctx.restore();};
     const drawPanelFocus=(seg,a,lt)=>{const row=seg.row;ctx.save();ctx.globalAlpha=a;ctx.textAlign='left';ctx.textBaseline='middle';
       const hasV=seg.phases.length>0,col=hasV?C.pink:C.sky;
@@ -2106,19 +2123,72 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       return Array.from({length:160},()=>({x:r()*W,d:r()*.9,v:230+r()*260,a:15+r()*45,f:2+r()*4,ph:r()*6.3,rs:3+r()*8,c:cols[(r()*cols.length)|0],w:10+r()*9,h:6+r()*5}));})();
     const drawConfetti=tc=>{for(const p of CONF){const t=tc-p.d;if(t<0)continue;const y=-20+p.v*t;if(y>H+20)continue;const x=p.x+p.a*Math.sin(p.f*t+p.ph);
       ctx.save();ctx.translate(x,y);ctx.rotate(p.ph+t*p.rs*.3);ctx.scale(1,Math.cos(t*p.rs));ctx.fillStyle=p.c;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();}};
-    const drawLine=(l,k,color)=>{if(k<=0)return;const a=cellRect(l[0]),b=cellRect(l[3]);
-      const ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,ext=CS*.42;
+    const drawLine=(l,k,color,bd=G)=>{if(k<=0)return;const a=rectIn(bd,l[0]),b=rectIn(bd,l[3]),u=bd.s/632;
+      const ax=a.x+a.w/2,ay=a.y+a.h/2,bx=b.x+b.w/2,by=b.y+b.h/2,dx=bx-ax,dy=by-ay,len=Math.hypot(dx,dy),ux=dx/len,uy=dy/len,ext=a.w*.42;
       const sx=ax-ux*ext,sy=ay-uy*ext,full=len+ext*2,e=easeIO(clamp(k));
       ctx.save();ctx.lineCap='round';ctx.globalAlpha=.95;
-      ctx.strokeStyle=C.night;ctx.lineWidth=24;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+ux*full*e,sy+uy*full*e);ctx.stroke();
-      ctx.strokeStyle=color;ctx.lineWidth=15;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+ux*full*e,sy+uy*full*e);ctx.stroke();ctx.restore();};
+      ctx.strokeStyle=C.night;ctx.lineWidth=24*u;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+ux*full*e,sy+uy*full*e);ctx.stroke();
+      ctx.strokeStyle=color;ctx.lineWidth=15*u;ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+ux*full*e,sy+uy*full*e);ctx.stroke();ctx.restore();};
     const KB=[[-1,-.6],[.8,-1],[-.7,.9],[1,.6],[0,-1],[-1,.2],[.9,.9],[-.5,1],[1,-.4],[-.8,-.8],[.6,.8],[-1,0],[.4,-1],[1,1],[-.3,.7],[.7,-.6]];
 
+    const boardBack=(b,a=1)=>{const m=20*b.s/632,rd=28*b.s/632;ctx.save();ctx.globalAlpha*=a;
+      ctx.fillStyle=C.card;rr(b.x-m,b.y-m,b.s+2*m,b.s+2*m,rd);ctx.fill();ctx.fillStyle=dots();rr(b.x-m,b.y-m,b.s+2*m,b.s+2*m,rd);ctx.fill();
+      ctx.lineWidth=3;ctx.strokeStyle=C.ink;rr(b.x-m,b.y-m,b.s+2*m,b.s+2*m,rd);ctx.stroke();ctx.restore();};
+    const SLOT={A:{x:96,y:178,s:470},B:{x:714,y:178,s:470}};
+    const drawCompare=lt=>{
+      const k=easeIO(clamp(lt/.9)),S=SLOT[side],O=SLOT[other];
+      const cur={x:lerp(G.x,S.x,k),y:lerp(G.y,S.y,k),s:lerp(G.s,S.s,k)};
+      if(lt<.6)drawPanelOutro(1-clamp(lt/.5),99);
+      // title + team labels
+      const ta=clamp((lt-.5)/.5);ctx.save();ctx.globalAlpha=ta;ctx.textAlign='center';ctx.textBaseline='top';
+      popText('SAME QUESTIONS, DIFFERENT BOARDS',W/2,40,38,C.pink);ctx.textAlign='left';
+      ctx.fillStyle=C.muted;ctx.font=`700 20px ${FZ}`;ctx.textAlign='center';ctx.fillText('Each team had its own 4×4 board. The same answers sit in different squares.',W/2,94);
+      ['A','B'].forEach(s=>{const b=SLOT[s],n=(s===side?winLines:winLines2).length;ctx.textAlign='left';
+        ctx.fillStyle=TEAM[s];ctx.beginPath();ctx.arc(b.x+12,148,10,0,Math.PI*2);ctx.fill();ctx.lineWidth=2;ctx.strokeStyle=C.ink;ctx.stroke();
+        ctx.fillStyle=C.ink;ctx.font=`900 26px ${FZ}`;ctx.textBaseline='middle';const nm=shorten(teams[s],18);ctx.fillText(nm+"'s board",b.x+30,149);
+        const w=ctx.measureText(nm+"'s board").width;ctx.font=`400 20px ${FP}`;ctx.fillStyle=C.lemon;ctx.fillText(`${n} LINE${n===1?'':'S'}`,b.x+46+w,150);});
+      ctx.restore();
+      // the board we have been watching shrinks into its slot
+      boardBack(cur);for(let p=0;p<16;p++)drawCell(p,rectIn(cur,p),{snap:Math.floor(lt*SNAP_FPS)});
+      winLines.forEach((l,i)=>drawLine(l,(lt-CMP_LINE0-i*LINE_STEP)/.38,LINE_COLORS[i%LINE_COLORS.length],cur));
+      // the other team's board: hidden squares first, then each answer flies over to its square there
+      const oa=clamp((lt-.6)/.4);if(oa<=0)return;
+      boardBack(O,oa);ctx.save();ctx.globalAlpha=oa;
+      for(let p=0;p<16;p++){if(rowByQi.has(order2[p]))continue;drawCell(p,rectIn(O,p),{ord:order2});}
+      rows.forEach((r,i)=>{const p2=order2.indexOf(r.qi),dst=rectIn(O,p2),t0=CMP_FLY0+i*CMP_STEP;
+        if(lt<t0+.7){ctx.save();ctx.globalAlpha=.25;ctx.setLineDash([6,5]);ctx.lineWidth=2;ctx.strokeStyle=C.ink;rr(dst.x+2,dst.y+2,dst.w-4,dst.h-4,10);ctx.stroke();ctx.restore();}
+        if(lt>=t0+.7)drawCell(p2,dst,{ord:order2,snap:Math.floor(lt*SNAP_FPS)});});
+      ctx.restore();
+      winLines2.forEach((l,i)=>drawLine(l,(lt-CMP_LINE0-i*LINE_STEP)/.38,LINE_COLORS[(i+3)%LINE_COLORS.length],O));
+      rows.forEach((r,i)=>{const t0=CMP_FLY0+i*CMP_STEP,q=clamp((lt-t0)/.7);if(q<=0||q>=1)return;
+        const p1=order.indexOf(r.qi),p2=order2.indexOf(r.qi),a=rectIn(S,p1),b=rectIn(O,p2),e=easeIO(q),lift=Math.sin(Math.PI*e)*90,sc=1+.25*Math.sin(Math.PI*e);
+        const w=a.w*sc,x=lerp(a.x,b.x,e)+(a.w-w)/2,y=lerp(a.y,b.y,e)-lift+(a.h-w)/2;
+        ctx.save();ctx.shadowColor='rgba(0,0,0,.45)';ctx.shadowBlur=24;drawCellT(p2,{x,y,w,h:w},Math.sin(Math.PI*e)*.12,{ord:order2,snap:Math.floor(lt*SNAP_FPS)});ctx.restore();});
+    };
+    const drawCredits=lt=>{
+      const a=clamp(lt/.5);ctx.save();ctx.globalAlpha=a;ctx.textAlign='center';ctx.textBaseline='top';
+      popText('MADE BY',W/2,54,80,C.pink);
+      if(bundle.schools){ctx.fillStyle=C.ink;ctx.font=`700 24px ${FZ}`;ctx.fillText(bundle.schools,W/2,160);}
+      ctx.restore();
+      let n=0;
+      ['A','B'].forEach((s,ci)=>{const x0=ci?690:120,colW=470;let x=x0,y=220;
+        ctx.save();ctx.globalAlpha=a;const hw=pill(shorten(teams[s],20),x0,y,24,TEAM[s],'#fff',C.ink);ctx.restore();y+=64;
+        people[s].forEach(nm=>{const k=clamp((lt-1.2-n*CRED_STEP)/.35);n++;if(k<=0)return;
+          ctx.font=`900 26px ${FZ}`;const label=shorten(nm,16),w=ctx.measureText(label).width+36,h=48;
+          if(x+w>x0+colW){x=x0;y+=h+12;}
+          const sc=easeOutBack(k);ctx.save();ctx.translate(x+w/2,y+h/2);ctx.rotate(((n*37)%7-3)*.012);ctx.scale(sc,sc);
+          ctx.fillStyle=C.ink;rr(-w/2+4,-h/2+4,w,h,14);ctx.fill();ctx.fillStyle=C.card;rr(-w/2,-h/2,w,h,14);ctx.fill();ctx.lineWidth=2.5;ctx.strokeStyle=TEAM[s];ctx.stroke();
+          ctx.fillStyle=C.ink;ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,0,2);ctx.restore();x+=w+12;});});
+      const ea=clamp((lt-1.6-n*CRED_STEP)/.5);ctx.save();ctx.globalAlpha=ea;ctx.textAlign='center';ctx.textBaseline='top';
+      ctx.fillStyle=C.lemon;ctx.font=`400 30px ${FC}`;ctx.fillText('Thank you, everyone!',W/2,618);
+      ctx.fillStyle=C.muted;ctx.font=`700 18px ${FZ}`;ctx.fillText((bundle.label||'')+(bundle.date?'  ·  '+bundle.date:''),W/2,666);ctx.restore();
+    };
     const drawFrame=t=>{
       ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);
-      ctx.fillStyle=C.card;rr(G.x-20,G.y-20,G.s+40,G.s+40,28);ctx.fill();ctx.fillStyle=dots();rr(G.x-20,G.y-20,G.s+40,G.s+40,28);ctx.fill();
-      ctx.lineWidth=3;ctx.strokeStyle=C.ink;rr(G.x-20,G.y-20,G.s+40,G.s+40,28);ctx.stroke();
       const seg=segs.find(s=>t>=s.start&&t<s.start+s.dur)||segs[segs.length-1],lt=t-seg.start;
+      if(seg.kind==='compare'){drawCompare(lt);return;}
+      if(seg.kind==='credits'){drawCredits(lt);return;}
+      boardBack(G);
       if(seg.kind==='intro'){
         for(let p=0;p<16;p++){const tt=lt-.3-p*.11,k=clamp(tt/.45);if(tt<=0)continue;const r=cellRect(p),s=easeBack(k),w=r.w*s,h=r.h*s,drop=(1-easeIO(k))*-70;
           ctx.save();ctx.globalAlpha=clamp(k*2);drawCellT(p,{x:r.x+(r.w-w)/2,y:r.y+(r.h-h)/2+drop,w,h},wobble(tt,.35,p%2?1:-1),{});ctx.restore();}
@@ -2183,6 +2253,9 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
       for(const s of segs){
         if(s.kind==='intro'){for(let p=0;p<16;p++)pop(s.start+.34+p*.11,p);}
         else if(s.kind==='focus'){whoosh(s.start+.02,1);whoosh(s.start+ZIN+s.hold,.4);if(!s.phases.length)click(s.start+ZIN+.05);}
+        else if(s.kind==='compare'){whoosh(s.start+.05,.9);rows.forEach((r,i)=>pop(s.start+CMP_FLY0+i*CMP_STEP+.68,i));
+          for(let i=0;i<Math.max(winLines.length,winLines2.length);i++)ding(s.start+CMP_LINE0+i*LINE_STEP+.3,i);}
+        else if(s.kind==='credits'){whoosh(s.start+.05,.7);for(let i=0;i<people.A.length+people.B.length;i++)pop(s.start+1.25+i*CRED_STEP,i);}
         else{for(let k=0;k<doneCount;k++)thump(s.start+STAMP0+k*STAMP_STEP+.22);winLines.forEach((l,i)=>ding(s.start+LINE0+i*LINE_STEP+.3,i));
           roll(s.start+LINE0+winLines.length*LINE_STEP-.6,.8);finale(s.start+CONF_T);}
       }
@@ -2328,6 +2401,9 @@ async function renderMomentsMovie(bundle,onProgress=()=>{},signal=null,options={
 
 // Date printed on the keepsake video's postmark and file names. Change this for the next exchange.
 const EVENT_DATE='2026-11-04';
+// School names shown at the top of the keepsake video.
+const EVENT_SCHOOLS='삼천포고등학교 × 基隆中山高中';
+
 function collectMoments(st,photos,side='A'){
   if(!st)return null;
   const rows=[];let count=0;
@@ -2345,7 +2421,7 @@ function collectMoments(st,photos,side='A'){
     if(Object.keys(answers).length)rows.push({qi,en:q.en,zh:q.zh||'',answers});
   }
   side=side==='B'&&st.teams.B?'B':'A';
-  return {label:st.label||'Our Bingo room',teams:{A:st.teams.A.name,B:st.teams.B?st.teams.B.name:''},side,order:(st.teams[side].order||[]).slice(),lines:{A:linesIn(st,'A'),B:linesIn(st,'B')},date:EVENT_DATE||new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'}),rows,count};
+  return {label:st.label||'Our Bingo room',teams:{A:st.teams.A.name,B:st.teams.B?st.teams.B.name:''},side,order:(st.teams[side].order||[]).slice(),lines:{A:linesIn(st,'A'),B:linesIn(st,'B')},schools:EVENT_SCHOOLS,orders:{A:(st.teams.A.order||[]).slice(),B:st.teams.B?(st.teams.B.order||[]).slice():[]},people:{A:st.members.filter(m=>m.side==='A').map(m=>m.name),B:st.members.filter(m=>m.side==='B').map(m=>m.name)},date:EVENT_DATE||new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Taipei'}),rows,count};
 }
 function saveMomentsFile(blob,name){const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),60000);}
 function offlineMomentsUI(bundle){
@@ -2377,7 +2453,7 @@ function offlineMomentsUI(bundle){
 function buildKeepsakeHTML(bundle){
   bundle={...bundle,musicLibrary:MUSIC_TRACKS,selectedMusic:$('momentsMusic').value,musicVolume:Number($('momentsMusicVolume').value)/100};
   const data=JSON.stringify(bundle).replace(/</g,'\\u003c');
-  return '<!doctype html>\n<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bingo 16 · Our Moments</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Mochiy+Pop+One&family=Noto+Sans+TC:wght@500;700;900&display=swap"><style>'+`
+  return '<!doctype html>\n<html lang="zh-Hant"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bingo 16 · Our Moments</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Dela+Gothic+One&family=Mochiy+Pop+One&family=Noto+Sans+KR:wght@700;900&family=Noto+Sans+TC:wght@500;700;900&display=swap"><style>'+`
 *{box-sizing:border-box}body{margin:0;background:#fff8ef;color:#2b2340;font-family:system-ui,sans-serif}header{padding:56px 24px 32px;max-width:1120px;margin:auto}.eyebrow{letter-spacing:3px;color:#9c6440;font-size:12px;font-weight:700}h1{font-size:clamp(34px,6vw,64px);letter-spacing:-2px;margin:12px 0}#albumMeta,.zh,.by{color:#7a7090;line-height:1.7}.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin:24px 0 8px}button{border:0;border-radius:14px;padding:13px 20px;background:#2b2340;color:#fff;font:600 15px system-ui;cursor:pointer}button:disabled{opacity:.5}select,input{font:inherit}select{padding:8px;border:1px solid #eadfce;border-radius:8px}label{display:flex;gap:10px;align-items:center}audio{max-width:100%;height:38px}#albumPrint{background:white;color:#2b2340;border:1px solid #eadfce}#albumStatus{min-height:24px;font-size:14px}main{max-width:1120px;margin:auto;padding:0 24px 40px}article{padding:28px;background:white;border-radius:24px;border:1px solid #eadfce;margin:0 0 24px;break-inside:avoid}h2{font-size:24px;line-height:1.35;margin:12px 0}.pair{display:grid;grid-template-columns:1fr 1fr;gap:20px}.pair section{min-width:0}h3{font-size:17px}.A{color:#e65a3c}.B{color:#3d7bff}img,video{display:block;width:100%;height:310px;object-fit:contain;border-radius:16px;background:#f7f2eb}.waiting{height:310px;display:grid;place-items:center;border:2px dashed #eadfce;border-radius:16px;color:#7a7090}.by{margin:8px 0;font-size:13px}footer{text-align:center;padding:10px 24px 40px;color:#7a7090}small{line-height:1.7}@media(max-width:600px){.pair{grid-template-columns:1fr}article{padding:20px}header{padding-top:32px}}@media print{.toolbar,#albumStatus,header small{display:none}body{background:white}img,video{height:220px}article{border-radius:0}h1{font-size:36px}}
 header{padding:20px 24px 12px}.toolbar{margin:10px 0}main#albumGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;padding:0 24px 32px}#albumGrid article{padding:0;margin:0;border:0;overflow:hidden;border-radius:18px;background:transparent}#albumGrid img,#albumGrid video{height:auto;max-height:70vh;min-height:180px;object-fit:contain;background:#f7f2eb;width:100%;border-radius:18px}#albumStatus:empty{display:none}@media(max-width:600px){main#albumGrid{grid-template-columns:1fr}header{padding-top:16px}}@media print{header{display:none}main#albumGrid{gap:10px;padding:0}#albumGrid img,#albumGrid video{max-height:40vh;min-height:0}}
 `+'</style><header><h1 id="albumTitle" hidden></h1><p id="albumMeta" hidden></p><div class="toolbar"><label>Music 配樂 <select id="albumMusic"></select></label><label>配樂音量 <input id="albumMusicVolume" type="range" min="0" max="40" value="18"></label><audio id="albumMusicPreview" controls preload="none" hidden></audio></div><div class="toolbar"><button id="albumMovie">製作紀念影片 · Make a video</button><button id="albumCancel" hidden>取消合成 Cancel</button><button id="albumPrint">列印／存成 PDF</button></div><p id="albumStatus" role="status"></p></header><main id="albumGrid"></main><script>'+renderMomentsMovie.toString()+'\n'+saveMomentsFile.toString()+'\n('+offlineMomentsUI.toString()+')('+data+');<\/script></html>';
@@ -2397,6 +2473,7 @@ async function showMoments(st=ST,photos=PH,side=(me()&&me().side)||'A'){
     momentsSnapshot=bundle;momentsRoomCode=st.code;
     $('momentsTitle').textContent=bundle.label+' · Our Moments';
     $('momentsSummary').textContent=`${bundle.count} 份照片與影片`;
+    $('momentsSide').innerHTML=SIDES.filter(s=>st.teams[s]).map(s=>`<option value="${s}">${esc(st.teams[s].name)}</option>`).join(''); $('momentsSide').value=side;
     $('momentsBody').innerHTML=bundle.rows.flatMap(row=>['A','B'].filter(side=>row.answers[side]).map(side=>{
       const a=row.answers[side];return `<article class="moment-media-only">${a.type==='video'?`<video controls playsinline preload="metadata" src="${esc(a.src)}"${a.poster?` poster="${esc(a.poster)}"`:''}></video>`:`<img src="${esc(a.src)}" alt="Photo">`}</article>`;
     })).join('');
@@ -2405,7 +2482,6 @@ async function showMoments(st=ST,photos=PH,side=(me()&&me().side)||'A'){
   }catch(e){toast(e.message||'無法準備成果，請稍後再試。');}
   finally{momentsPreparing=false;}
 }
-$('downloadMoments').onclick=()=>showMoments();
 $('momentsClose').onclick=closeMoments;
 $('momentsModal').onclick=e=>{if(e.target.id==='momentsModal')closeMoments();};
 async function latestMomentsSnapshot(){
@@ -2435,6 +2511,7 @@ $('momentsMovie').onclick=async()=>{
   finally{momentsAbort=null;$('momentsMusic').disabled=$('momentsMusicVolume').disabled=false;$('momentsMovie').disabled=$('momentsHTML').disabled=false;$('momentsCancel').classList.add('hidden');}
 };
 $('momentsCancel').onclick=()=>momentsAbort?.abort();
+$('momentsSide').onchange=e=>{ momentsSide=e.target.value==='B'?'B':'A'; };
 function openTeacherMoments(){const r=ROOMS[openRoomCode];if(r?.st)showMoments(r.st,r.photos,'A');}
 
 
